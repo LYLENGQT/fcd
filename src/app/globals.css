@@ -1,0 +1,231 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 150 33% 97%;
+    --foreground: 158 45% 12%;
+    --card: 150 30% 99%;
+    --card-foreground: 158 45% 12%;
+    --primary: 152 58% 30%;
+    --primary-foreground: 150 33% 96%;
+    --secondary: 150 24% 93%;
+    --secondary-foreground: 158 45% 14%;
+    --muted: 150 24% 93%;
+    --muted-foreground: 155 14% 40%;
+    --accent: 150 30% 90%;
+    --accent-foreground: 158 45% 14%;
+    --destructive: 352 72% 47%;
+    --destructive-foreground: 150 33% 98%;
+    --border: 150 20% 86%;
+    --input: 150 20% 86%;
+    --ring: 152 58% 38%;
+    --radius: 0.5rem;
+
+    /* FCDSA Meet — Guimbal green scheme (matches the certificate). Deep emerald
+       structural blocks, near-white mint canvas, gold-flame warm accent. */
+    --ink: 158 64% 11%;     /* deep emerald → mastheads/header/footer + headings */
+    --bone: 150 33% 96%;    /* near-white mint canvas */
+    --bone-2: 146 26% 89%;  /* deeper mint for form cards */
+    --gold: 41 74% 55%;     /* torch-flame gold accent (from the logo) */
+    --gold-deep: 36 80% 40%;
+    --crimson: 352 76% 44%; /* live / destructive */
+    --jade: 152 56% 36%;    /* bright emerald accent */
+    --cyan: 168 78% 44%;    /* electric cyan-green — glow/edge accent (cert banners) */
+
+    /* ── Theme-flip semantic tokens ──────────────────────────────────
+       The canvas (bg-bone / text-ink) is light in BOTH themes and never
+       flips, so it stays literal. Only the dark structural blocks
+       (header, footer, hero, page mastheads, table headers, admin
+       sidebar, active chips) route through these tokens. DARK THEME =
+       default (these :root values reproduce the current look). */
+    --surface-inv: 158 64% 11%;  /* masthead/hero/header/footer fill → deep emerald */
+    --on-inv: 150 33% 96%;       /* text on those blocks → mint-white */
+    --chip: 150 33% 96%;         /* high-contrast CTA/chip on a masthead → mint-white */
+    --on-chip: 158 64% 11%;      /* text on that chip → deep emerald */
+    /* Row/card hover. The canvas is light in BOTH themes, so hovers can't just
+       invert to "dark" — they route through these so the highlight reads right
+       per theme. DARK theme = a bold deep-emerald inversion. */
+    --highlight: 158 64% 11%;    /* hovered row/card fill → deep emerald */
+    --on-highlight: 150 33% 96%; /* text/overlays on a hovered row → mint-white */
+    --grain-opacity: 0.16;       /* film-grain strength (toned down in light) */
+  }
+
+  /* LIGHT THEME — only the flip tokens change; canvas + brand accents
+     (gold/crimson/jade) stay as-is. Mastheads become a slightly deeper
+     warm cream so they still read as distinct blocks against the bone
+     body, with dark ink text and a dark high-contrast chip. */
+  .light {
+    --surface-inv: 150 36% 89%;  /* masthead fill → light mint block */
+    --on-inv: 158 64% 12%;       /* text on masthead → deep emerald */
+    --chip: 158 64% 12%;         /* CTA/chip on light masthead → deep emerald */
+    --on-chip: 150 33% 96%;      /* text on that chip → mint-white */
+    /* LIGHT theme hover: a subtle mint lift (not a dark inversion) with
+       deep-green text, so hovers stay light-mode-native and clearly visible. */
+    --highlight: 148 32% 84%;    /* hovered row/card fill → mint */
+    --on-highlight: 158 64% 12%; /* text/overlays on a hovered row → deep emerald */
+    --grain-opacity: 0.06;       /* grain is heavier-looking on light; soften */
+  }
+
+  .dark {
+    --background: 160 30% 7%;
+    --foreground: 150 33% 96%;
+    --card: 160 28% 10%;
+    --card-foreground: 150 33% 96%;
+    --primary: 150 55% 45%;
+    --primary-foreground: 160 30% 7%;
+    --secondary: 158 22% 17%;
+    --secondary-foreground: 150 33% 96%;
+    --muted: 158 22% 17%;
+    --muted-foreground: 150 16% 64%;
+    --accent: 158 22% 20%;
+    --accent-foreground: 150 33% 96%;
+    --destructive: 352 60% 42%;
+    --destructive-foreground: 150 33% 98%;
+    --border: 158 22% 20%;
+    --input: 158 22% 20%;
+    --ring: 150 55% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+/* ── Editorial / Athletic Heritage utilities ───────────────────────── */
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display), Impact, "Helvetica Neue Condensed", sans-serif;
+    font-stretch: 100%;
+  }
+  .font-editorial {
+    font-family: var(--font-editorial), "Iowan Old Style", Georgia, serif;
+  }
+  .font-mono-data {
+    font-family: var(--font-mono), ui-monospace, "JetBrains Mono", monospace;
+    font-feature-settings: "tnum" 1, "ss01" 1;
+  }
+
+  /* Palette colors (ink/bone/gold/crimson/jade) and their opacity modifiers
+     are now registered in tailwind.config.ts — use them like any other color. */
+
+  /* Film-grain overlay */
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: var(--grain-opacity, 0.18);
+    mix-blend-mode: overlay;
+    z-index: 1;
+  }
+
+  /* Radial spotlight, subtle. Uses background-image (NOT the `background`
+     shorthand) so it layers over an existing background-color like bg-ink
+     instead of resetting it to transparent. */
+  .spotlight {
+    background-image:
+      radial-gradient(
+        60% 50% at 15% 0%,
+        hsl(var(--gold) / 0.18) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        45% 45% at 100% 100%,
+        hsl(var(--cyan) / 0.30) 0%,
+        transparent 55%
+      );
+  }
+
+  /* Blueprint grid — faint emerald lines on the light canvas. The grid + its
+     radial fade live on a ::before layer so the mask only affects the grid,
+     never the page content (a mask on the element itself clips children too). */
+  .grid-bg {
+    position: relative;
+  }
+  .grid-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, hsl(var(--ink) / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--ink) / 0.05) 1px, transparent 1px);
+    background-size: 38px 38px;
+    -webkit-mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 100%);
+    mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 100%);
+  }
+  .grid-bg > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Marquee */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 38s linear infinite;
+  }
+
+  /* On-air pulse */
+  @keyframes onair {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--crimson) / 0.7); }
+    50% { box-shadow: 0 0 0 8px hsl(var(--crimson) / 0); }
+  }
+  .pulse-dot {
+    animation: onair 1.6s ease-out infinite;
+  }
+
+  /* Slow rotate for decorative ring */
+  @keyframes spin-slow {
+    to { transform: rotate(360deg); }
+  }
+  .spin-slow {
+    animation: spin-slow 60s linear infinite;
+  }
+
+  /* Page-load reveal */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .rise {
+    animation: rise 0.9s cubic-bezier(.2,.65,.2,1) both;
+  }
+
+  /* Hairline divider */
+  .hairline {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--on-inv) / 0.25) 12%,
+      hsl(var(--on-inv) / 0.25) 88%,
+      transparent
+    );
+  }
+
+  /* Number outline for huge ranks (sits on dark mastheads → flip token) */
+  .num-outline {
+    -webkit-text-stroke: 1.5px hsl(var(--on-inv) / 0.55);
+    color: transparent;
+  }
+
+  /* Outline rank that sits on the LIGHT canvas (e.g. the leaderboard). A
+     faint dark outline, visible in both themes since the canvas is light in
+     both. The row's hover is just a subtle tint, so this stays put. */
+  .num-outline-row {
+    -webkit-text-stroke: 1.5px hsl(var(--ink) / 0.4);
+    color: transparent;
+  }
+}
