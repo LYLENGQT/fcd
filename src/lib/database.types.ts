@@ -159,3 +159,103 @@ export interface AuditLog {
   details: Record<string, unknown> | null;
   created_at: string;
 }
+
+export interface EmergencyContact {
+  id: string;
+  name: string;
+  contact_number: string;
+  address: string;
+  contact_type: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface HostMap {
+  id: string;
+  embed_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Committee {
+  id: string;
+  role_name: string;
+  person_name: string;
+  sort_order: number;
+  created_at: string;
+}
+
+// Hall of Records archive entry. (Named MeetRecord — `Record` is a TS built-in.)
+export interface MeetRecord {
+  id: string;
+  sport: string;
+  event_name: string;
+  record_holder: string;
+  delegation: string;
+  mark: string;
+  level: string;
+  year_set: number | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface Mascot {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  symbolism: string;
+  image_url: string;
+  updated_at: string;
+}
+
+export interface Feedback {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  created_at: string;
+}
+
+export interface MedalByLevelRow {
+  level: SchoolLevel;
+  gold: number;
+  silver: number;
+  bronze: number;
+  total: number;
+}
+
+export interface MedalBySportRow {
+  sport_id: string;
+  sport_name: string;
+  level: SchoolLevel;
+  gold: number;
+  silver: number;
+  bronze: number;
+  total: number;
+}
+
+/** `medal_by_division` view (0008) — medals grouped by division (level × gender). */
+export interface MedalByDivisionRow {
+  level: SchoolLevel;
+  gender: GenderDiv;
+  gold: number;
+  silver: number;
+  bronze: number;
+  total: number;
+}
+
+/** `medal_by_delegation_sport` view (0008) — one row per delegation × sport. */
+export interface MedalByDelegationSportRow {
+  delegation_id: string;
+  delegation_name: string;
+  abbrev: string;
+  color: string;
+  sport_id: string;
+  sport_name: string;
+  gold: number;
+  silver: number;
+  bronze: number;
+  total: number;
+}

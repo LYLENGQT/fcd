@@ -1,6 +1,8 @@
 import { Field, AdminInput, AdminSelect } from "@/components/admin/admin-ui";
 import type { Category, EventRow, Sport } from "@/lib/database.types";
 
+const LEVEL_SHORT = { elementary: "Elem", secondary: "Sec" } as const;
+
 /** Shared event form fields for create + edit. */
 export function EventFields({
   sports,
@@ -51,7 +53,7 @@ export function EventFields({
           </option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {c.name} · {LEVEL_SHORT[c.level]} {c.gender}
             </option>
           ))}
         </AdminSelect>

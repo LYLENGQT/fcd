@@ -14,9 +14,11 @@ export default async function AdminDashboardLayout({
   if (profile.role !== "admin" && profile.role !== "encoder") redirect("/");
 
   return (
-    <div className="flex min-h-screen bg-bone text-ink">
+    <div className="flex min-h-dvh bg-bone text-ink">
       <AdminSidebar email={profile.email} role={profile.role} />
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <main id="main" tabIndex={-1} className="flex-1 overflow-x-hidden focus:outline-none">
+        {children}
+      </main>
     </div>
   );
 }

@@ -15,11 +15,19 @@ import { AdminSearch } from "@/components/admin/admin-search";
 import { Pagination } from "@/components/pagination";
 import { PAGE_SIZE_ADMIN } from "@/lib/constants";
 import { parsePage, pageRange } from "@/lib/utils";
-import type { Delegation } from "@/lib/database.types";
 import { createDelegation, deleteDelegation } from "./actions";
 import { DelegationFields } from "./delegation-fields";
 
 export const metadata = { title: "Delegations" };
+
+type DelegationListRow = {
+  id: string;
+  name: string;
+  abbrev: string;
+  color: string;
+  slug: string;
+  athletes: { count: number }[];
+};
 
 export default async function DelegationsAdminPage({
   searchParams,
@@ -31,10 +39,14 @@ export default async function DelegationsAdminPage({
   const q = (searchParams.q ?? "").trim();
 
   const supabase = createClient();
-  let query = supabase.from("delegations").select("*", { count: "exact" });
+  let query = supabase
+    .from("delegations")
+    .select("id, name, abbrev, color, slug, athletes(count)", {
+      count: "exact",
+    });
   if (q) query = query.or(`name.ilike.%${q}%,abbrev.ilike.%${q}%`);
   const { data, count } = await query.order("name").range(from, to);
-  const delegations = (data ?? []) as Delegation[];
+  const delegations = (data ?? []) as unknown as DelegationListRow[];
 
   return (
     <>
@@ -71,10 +83,12 @@ export default async function DelegationsAdminPage({
               <>
                 <Th>Delegation</Th>
                 <Th>Abbrev</Th>
+                <Th align="center">Athletes</Th>
                 <Th align="center">Color</Th>
                 <Th align="right">Actions</Th>
               </>
             }
+            minWidth={720}
           >
             {delegations.map((d) => (
               <Tr key={d.id}>
@@ -84,6 +98,12 @@ export default async function DelegationsAdminPage({
                 <Td className="font-mono-data text-xs uppercase tracking-[0.15em] text-ink/60">
                   {d.abbrev}
                 </Td>
+                <Td
+                  align="center"
+                  className="font-mono-data tabular-nums text-ink/70"
+                >
+                  {d.athletes?.[0]?.count ?? 0}
+                </Td>
                 <Td align="center">
                   <span
                     className="inline-block h-4 w-4 rounded-sm ring-2 ring-ink/15 align-middle"
@@ -92,6 +112,14 @@ export default async function DelegationsAdminPage({
                 </Td>
                 <Td align="right">
                   <div className="flex justify-end gap-3">
+                    <Link
+                      href={`/delegations/${d.slug}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="font-mono-data text-[11px] uppercase tracking-[0.15em] text-ink/70 underline-offset-4 hover:text-gold-deep hover:underline"
+                    >
+                      View public ↗
+                    </Link>
                     <Link
                       href={`/admin/delegations/${d.id}/edit`}
                       className="font-mono-data text-[11px] uppercase tracking-[0.15em] text-ink/70 underline-offset-4 hover:text-gold-deep hover:underline"

@@ -107,6 +107,7 @@ export default async function AthletesAdminPage({
                 <Th align="right">Actions</Th>
               </>
             }
+            minWidth={720}
           >
             {athletes.map((a) => (
               <Tr key={a.id}>
@@ -124,6 +125,14 @@ export default async function AthletesAdminPage({
                 </Td>
                 <Td align="right">
                   <div className="flex justify-end gap-3">
+                    <Link
+                      href={`/athletes/${a.id}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="font-mono-data text-[11px] uppercase tracking-[0.15em] text-ink/70 underline-offset-4 hover:text-gold-deep hover:underline"
+                    >
+                      View public ↗
+                    </Link>
                     <Link
                       href={`/admin/athletes/${a.id}/edit`}
                       className="font-mono-data text-[11px] uppercase tracking-[0.15em] text-ink/70 underline-offset-4 hover:text-gold-deep hover:underline"

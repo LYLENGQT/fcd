@@ -2,9 +2,9 @@ import { cn } from "@/lib/utils";
 import type { MedalKind } from "@/lib/database.types";
 
 const DOT: Record<"gold" | "silver" | "bronze", string> = {
-  gold: "bg-[hsl(41,73%,56%)]",
-  silver: "bg-[hsl(220,8%,72%)]",
-  bronze: "bg-[hsl(24,55%,48%)]",
+  gold: "bg-gold",
+  silver: "bg-silver",
+  bronze: "bg-bronze",
 };
 
 /** Compact gold/silver/bronze counts with colored dots. */

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
+import { MedalCounts } from "@/components/medals";
 import { Pagination } from "@/components/pagination";
 import { PAGE_SIZE_PUBLIC } from "@/lib/constants";
 import { parsePage, pageRange } from "@/lib/utils";
@@ -49,6 +50,47 @@ export default async function AthletesPage({
   const athletes = (data ?? []) as unknown as Row[];
   const total = count ?? 0;
 
+  // Per-card medal badges: one read scoped to THIS page's athlete ids, grouped in JS.
+  const pageIds = athletes.map((a) => a.id);
+  const medalsByAthlete = new Map<
+    string,
+    { gold: number; silver: number; bronze: number }
+  >();
+  if (pageIds.length > 0) {
+    const { data: medalRows } = await supabase
+      .from("results")
+      .select("medal, athlete_id")
+      .in("athlete_id", pageIds);
+    for (const row of (medalRows ?? []) as {
+      medal: "gold" | "silver" | "bronze" | "none";
+      athlete_id: string;
+    }[]) {
+      if (row.medal === "none") continue;
+      const tally = medalsByAthlete.get(row.athlete_id) ?? {
+        gold: 0,
+        silver: 0,
+        bronze: 0,
+      };
+      tally[row.medal] += 1;
+      medalsByAthlete.set(row.athlete_id, tally);
+    }
+  }
+
+  // Distinct delegations across the UNFILTERED directory — only shown on the
+  // plain "Directory" caption, so skip the read entirely when searching (and
+  // never pair a filtered athlete count with a global delegation count).
+  let delegationCount = 0;
+  if (!q) {
+    const { data: delegationRows } = await supabase
+      .from("athletes")
+      .select("delegation_id");
+    delegationCount = new Set(
+      ((delegationRows ?? []) as { delegation_id: string | null }[])
+        .map((r) => r.delegation_id)
+        .filter((id): id is string => Boolean(id)),
+    ).size;
+  }
+
   return (
     <>
       <PageHeader
@@ -70,6 +112,9 @@ export default async function AthletesPage({
         <div className="mt-4 font-mono-data text-[11px] uppercase tracking-[0.22em] text-ink/50">
           {q ? `Results for “${q}”` : "Directory"} · {total} athlete
           {total === 1 ? "" : "s"}
+          {delegationCount > 0
+            ? ` · across ${delegationCount} delegation${delegationCount === 1 ? "" : "s"}`
+            : ""}
         </div>
 
         {athletes.length === 0 ? (
@@ -82,12 +127,12 @@ export default async function AthletesPage({
               <Link
                 key={a.id}
                 href={`/athletes/${a.id}`}
-                className="group flex items-center justify-between gap-3 bg-bone px-5 py-4 transition-colors hover:bg-highlight hover:text-on-highlight"
+                className="group flex items-center justify-between gap-3 bg-bone px-5 py-4 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-highlight hover:text-on-highlight hover:shadow-md hover:shadow-ink/10"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span
-                    className="h-8 w-1 shrink-0 rounded-full"
-                    style={{ backgroundColor: a.delegations?.color ?? "#999" }}
+                    className="h-8 w-1 shrink-0 rounded-sm transition-all duration-300 group-hover:scale-y-110"
+                    style={{ backgroundColor: a.delegations?.color ?? "hsl(var(--ink) / 0.3)" }}
                     aria-hidden
                   />
                   <div className="min-w-0">
@@ -96,11 +141,25 @@ export default async function AthletesPage({
                     </div>
                     <div className="truncate font-mono-data text-[10px] uppercase tracking-[0.18em] text-ink/45 group-hover:text-on-highlight/55">
                       {a.delegations?.abbrev}
+                      {a.delegations?.name ? ` · ${a.delegations.name}` : ""}
                     </div>
                   </div>
                 </div>
-                <span className="shrink-0 font-mono-data text-[10px] uppercase tracking-[0.16em] text-ink/45 group-hover:text-on-highlight/55">
-                  {a.level} {a.gender}
+                <span className="flex shrink-0 flex-col items-end gap-1.5">
+                  <span className="font-mono-data text-[10px] uppercase tracking-[0.16em] text-ink/45 group-hover:text-on-highlight/55">
+                    {a.level} {a.gender}
+                  </span>
+                  {(() => {
+                    const m = medalsByAthlete.get(a.id);
+                    return m ? (
+                      <MedalCounts
+                        gold={m.gold}
+                        silver={m.silver}
+                        bronze={m.bronze}
+                        className="scale-90 gap-2.5"
+                      />
+                    ) : null;
+                  })()}
                 </span>
               </Link>
             ))}

@@ -21,6 +21,7 @@ export function StatusSelect({
 
   return (
     <Select
+      aria-label="Event status"
       className={`${ADMIN_CONTROL} h-8 w-32`}
       defaultValue={current}
       disabled={pending}

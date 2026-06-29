@@ -9,7 +9,7 @@ import type { ActionResult } from "@/components/admin/entity-form";
 function parse(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const abbrev = String(formData.get("abbrev") ?? "").trim();
-  const color = String(formData.get("color") ?? "#1e40af");
+  const color = String(formData.get("color") ?? "#287f45");
   const logo_url = String(formData.get("logo_url") ?? "").trim() || null;
   return { name, abbrev, color, logo_url };
 }

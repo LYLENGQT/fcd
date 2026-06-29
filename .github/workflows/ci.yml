@@ -34,3 +34,10 @@ jobs:
           # Build runs without live Supabase creds; the app degrades to empty
           # data, so a green build proves the bundle compiles & renders.
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+      - name: Smoke test
+        run: npm run smoke
+        env:
+          # Boots the built app (no Supabase creds) and asserts key public +
+          # admin routes respond — proves the bundle renders end-to-end.
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000

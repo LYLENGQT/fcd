@@ -26,7 +26,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       title={label}
       aria-pressed={isLight}
       className={cn(
-        "inline-flex h-9 w-9 items-center justify-center border border-on-inv/20 text-on-inv/70 transition-colors hover:border-on-inv/40 hover:text-on-inv",
+        "inline-flex h-9 w-9 cursor-pointer items-center justify-center border border-on-inv/20 text-on-inv/70 transition-colors hover:border-on-inv/40 hover:text-on-inv",
         className,
       )}
     >

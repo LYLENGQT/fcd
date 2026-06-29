@@ -42,6 +42,10 @@ export default async function ResultsPage({
 
   const events = (data ?? []) as unknown as EventListRow[];
   const total = count ?? 0;
+  const encodedCount = events.filter(
+    (e) => (e.results?.[0]?.count ?? 0) > 0
+  ).length;
+  const pendingCount = events.length - encodedCount;
 
   return (
     <>
@@ -59,6 +63,19 @@ export default async function ResultsPage({
       />
 
       <AdminSection>
+        <p className="mb-5 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+          {total} event{total === 1 ? "" : "s"}
+          {events.length === 0
+            ? ""
+            : events.length < total
+              ? ` · ${encodedCount}/${events.length} encoded on this page`
+              : ` · ${encodedCount} encoded · ${pendingCount} pending`}
+        </p>
+        {page === 1 && events.length > 0 && encodedCount === 0 ? (
+          <p className="mb-5 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+            No results encoded yet — pick any event to begin.
+          </p>
+        ) : null}
         {total === 0 ? (
           <div className="border border-ink/15 px-6 py-16 text-center font-editorial text-2xl italic text-ink/45">
             No events yet. Create events under Setup → Events (or run the seed).
@@ -70,7 +87,9 @@ export default async function ResultsPage({
                 <Th>Event</Th>
                 <Th>Category</Th>
                 <Th>Type</Th>
-                <Th align="center">Encoded</Th>
+                <Th align="center" title="Podium results already encoded for this event">
+                  Encoded
+                </Th>
                 <Th align="right">Action</Th>
               </>
             }

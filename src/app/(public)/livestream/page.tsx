@@ -71,6 +71,7 @@ export default async function LivestreamPage() {
                     className="h-full w-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
+                    loading="lazy"
                   />
                   {s.is_live && (
                     <span className="pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 bg-crimson px-2.5 py-1 font-mono-data text-[10px] font-bold uppercase tracking-[0.2em] text-bone">

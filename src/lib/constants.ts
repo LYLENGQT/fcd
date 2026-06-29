@@ -30,6 +30,8 @@ export const PUBLIC_NAV_GROUPS: readonly NavEntry[] = [
     items: [
       { href: "/tally", label: "Medal Tally" },
       { href: "/standings", label: "Standings" },
+      { href: "/tally/breakdown", label: "Medal Breakdown" },
+      { href: "/records", label: "Hall of Records" },
     ],
   },
   {
@@ -54,6 +56,26 @@ export const PUBLIC_NAV_GROUPS: readonly NavEntry[] = [
       { href: "/livestream", label: "Livestream" },
     ],
   },
+  {
+    label: "About",
+    items: [
+      { href: "/mascot", label: "The Mascot" },
+      { href: "/feedback", label: "Feedback" },
+    ],
+  },
+  {
+    label: "Host",
+    items: [
+      { href: "/host/overview", label: "Overview" },
+      { href: "/host/accommodation", label: "Accommodation" },
+      { href: "/host/food-dining", label: "Food & Dining" },
+      { href: "/host/tourist-spots", label: "Tourist Spots" },
+      { href: "/host/transportation", label: "Transportation" },
+      { href: "/host/map", label: "Map (Poblacion)" },
+      { href: "/host/emergency", label: "Emergency Directory" },
+      { href: "/host/committees", label: "Committees" },
+    ],
+  },
 ];
 
 // Flat list of every public link — derived from the groups so it can never
@@ -74,5 +96,9 @@ export const ADMIN_NAV = [
   { href: "/admin/athletes", label: "Athletes" },
   { href: "/admin/announcements", label: "Announcements" },
   { href: "/admin/livestreams", label: "Livestreams" },
+  { href: "/admin/records", label: "Hall of Records" },
+  { href: "/admin/mascot", label: "Mascot" },
+  { href: "/admin/host", label: "Host Info" },
+  { href: "/admin/feedback", label: "Feedback" },
   { href: "/admin/audit", label: "Audit Log" },
 ] as const;

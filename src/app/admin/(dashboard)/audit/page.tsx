@@ -12,6 +12,7 @@ type AuditRow = {
   action: string;
   entity: string;
   entity_id: string | null;
+  details: Record<string, unknown> | null;
   created_at: string;
   profiles: { email: string } | null;
 };
@@ -21,6 +22,28 @@ const ACTION_TONE: Record<string, string> = {
   update: "text-gold-deep",
   delete: "text-crimson",
 };
+
+const ACTION_LABEL: Record<string, string> = {
+  insert: "Created",
+  update: "Edited",
+  delete: "Removed",
+};
+
+/** Human-readable label for an audited record, falling back to a short UUID. */
+function recordLabel(r: AuditRow): string {
+  const d = r.details;
+  if (d) {
+    const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+    const name = str(d.name);
+    if (name) return name;
+    const first = str(d.first_name);
+    const last = str(d.last_name);
+    if (first || last) return [first, last].filter(Boolean).join(" ");
+    const title = str(d.title);
+    if (title) return title;
+  }
+  return r.entity_id ? r.entity_id.slice(0, 8) : "—";
+}
 
 export default async function AuditLogPage({
   searchParams,
@@ -33,9 +56,10 @@ export default async function AuditLogPage({
   const supabase = createClient();
   const { data, count } = await supabase
     .from("audit_log")
-    .select("id, action, entity, entity_id, created_at, profiles(email)", {
-      count: "exact",
-    })
+    .select(
+      "id, action, entity, entity_id, details, created_at, profiles(email)",
+      { count: "exact" }
+    )
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -89,14 +113,14 @@ export default async function AuditLogPage({
                       ACTION_TONE[r.action] ?? "text-ink/70"
                     }`}
                   >
-                    {r.action}
+                    {ACTION_LABEL[r.action] ?? r.action}
                   </span>
                 </Td>
                 <Td className="font-mono-data text-xs uppercase tracking-[0.15em] text-ink/70">
                   {r.entity}
                 </Td>
-                <Td className="font-mono-data text-[10px] text-ink/40">
-                  {r.entity_id ? r.entity_id.slice(0, 8) : "—"}
+                <Td className="font-mono-data text-[11px] text-ink/60">
+                  {recordLabel(r)}
                 </Td>
               </Tr>
             ))}

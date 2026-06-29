@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
-import { MedalTag } from "@/components/medals";
+import { MedalTag, MedalCounts } from "@/components/medals";
 import { Pagination } from "@/components/pagination";
 import { PAGE_SIZE_PUBLIC } from "@/lib/constants";
 import { parsePage, pageRange } from "@/lib/utils";
@@ -51,7 +51,7 @@ type ResultRow = {
   placement: number;
   medal: MedalKind;
   mark: string | null;
-  events: { name: string; sports: { name: string } | null } | null;
+  events: { id: string; name: string; sports: { name: string } | null } | null;
 };
 
 const ordinal = (n: number) => {
@@ -76,17 +76,26 @@ export default async function AthleteDetailPage({
   const supabase = createClient();
   const { data: resultsData, count } = await supabase
     .from("results")
-    .select("id, placement, medal, mark, events(name, sports(name))", {
+    .select("id, placement, medal, mark, events(id, name, sports(name))", {
       count: "exact",
     })
     .eq("athlete_id", athlete.id)
     .order("placement")
     .range(from, to);
 
+  // Full, unpaginated medal haul — derive aside stats from this, never the slice.
+  const { data: medalData } = await supabase
+    .from("results")
+    .select("medal")
+    .eq("athlete_id", athlete.id);
+  const medals = (medalData ?? []) as { medal: MedalKind }[];
+  const gold = medals.filter((m) => m.medal === "gold").length;
+  const silver = medals.filter((m) => m.medal === "silver").length;
+  const bronze = medals.filter((m) => m.medal === "bronze").length;
+  const podiums = gold + silver + bronze;
+
   const results = (resultsData ?? []) as unknown as ResultRow[];
   const total = count ?? 0;
-  const golds = results.filter((r) => r.medal === "gold").length;
-  const podiums = results.filter((r) => r.medal !== "none").length;
 
   return (
     <>
@@ -128,22 +137,32 @@ export default async function AthleteDetailPage({
           </>
         }
         aside={
-          <dl className="grid grid-cols-3 gap-px overflow-hidden border border-on-inv/15 bg-on-inv/10">
-            {[
-              { k: "Events", v: total },
-              { k: "Podiums", v: podiums },
-              { k: "Golds", v: golds },
-            ].map((s) => (
-              <div key={s.k} className="bg-surface-inv px-4 py-5 text-center">
-                <dt className="font-mono-data text-[10px] uppercase tracking-[0.16em] text-on-inv/55">
-                  {s.k}
-                </dt>
-                <dd className="mt-1 font-display text-3xl font-black text-on-inv">
-                  {s.v}
-                </dd>
+          <div className="space-y-px">
+            <dl className="grid grid-cols-3 gap-px overflow-hidden border border-on-inv/15 bg-on-inv/10">
+              {[
+                { k: "Events", v: total },
+                { k: "Podiums", v: podiums },
+                { k: "Golds", v: gold },
+              ].map((s) => (
+                <div key={s.k} className="bg-surface-inv px-4 py-5 text-center">
+                  <dt className="font-mono-data text-[10px] uppercase tracking-[0.16em] text-on-inv/55">
+                    {s.k}
+                  </dt>
+                  <dd className="mt-1 font-display text-3xl font-black text-on-inv">
+                    {s.v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {podiums > 0 && (
+              <div className="flex items-center justify-between gap-4 border border-on-inv/15 bg-on-inv/10 px-4 py-3">
+                <span className="font-mono-data text-[10px] uppercase tracking-[0.16em] text-on-inv/55">
+                  Medal Haul
+                </span>
+                <MedalCounts gold={gold} silver={silver} bronze={bronze} className="text-on-inv" />
               </div>
-            ))}
-          </dl>
+            )}
+          </div>
         }
       />
 
@@ -163,18 +182,43 @@ export default async function AthleteDetailPage({
           </p>
         ) : (
           <ul className="divide-y divide-ink/12">
+            <li className="grid grid-cols-12 items-baseline gap-x-4 border-b border-ink/15 py-3 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+              <div className="col-span-12 md:col-span-6">Event / Sport</div>
+              <div className="col-span-4 md:col-span-2">Place</div>
+              <div className="col-span-4 md:col-span-2">Mark</div>
+              <div className="col-span-4 justify-self-end md:col-span-2">Medal</div>
+            </li>
             {results.map((r) => (
               <li
                 key={r.id}
-                className="grid grid-cols-12 items-baseline gap-x-4 gap-y-1 py-5"
+                className="grid grid-cols-12 items-baseline gap-x-4 gap-y-1 py-5 transition-colors hover:bg-ink/[0.04]"
               >
                 <div className="col-span-12 md:col-span-6">
-                  <div className="font-display text-xl font-bold uppercase leading-tight tracking-wide">
-                    {r.events?.name}
-                  </div>
-                  <div className="mt-0.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/55">
-                    {r.events?.sports?.name}
-                  </div>
+                  {r.events?.id ? (
+                    <Link
+                      href={`/results/${r.events.id}`}
+                      className="group/event inline-block"
+                    >
+                      <div className="font-display text-xl font-bold uppercase leading-tight tracking-wide transition-colors group-hover/event:text-gold-deep">
+                        {r.events.name}
+                      </div>
+                      <div className="mt-0.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/55">
+                        {r.events.sports?.name}
+                        <span className="ml-2 text-ink/0 transition-colors group-hover/event:text-gold-deep">
+                          View event →
+                        </span>
+                      </div>
+                    </Link>
+                  ) : (
+                    <>
+                      <div className="font-display text-xl font-bold uppercase leading-tight tracking-wide">
+                        {r.events?.name}
+                      </div>
+                      <div className="mt-0.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/55">
+                        {r.events?.sports?.name}
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="col-span-4 font-mono-data text-sm tabular-nums text-ink/70 md:col-span-2">
                   {ordinal(r.placement)}

@@ -67,8 +67,16 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-screen antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className="min-h-dvh antialiased">
+        <ThemeProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-ink focus:px-4 focus:py-2.5 focus:font-mono-data focus:text-xs focus:uppercase focus:tracking-[0.2em] focus:text-bone focus:no-underline"
+          >
+            Skip to content
+          </a>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -23,19 +23,19 @@ export function SiteFooter() {
         <div className="flex items-end justify-start gap-6 md:justify-end">
           <Link
             href="/announcements"
-            className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-on-inv/70 hover:text-on-inv"
+            className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-on-inv/70 transition-colors hover:text-on-inv"
           >
             Bulletin
           </Link>
           <Link
             href="/livestream"
-            className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-on-inv/70 hover:text-on-inv"
+            className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-on-inv/70 transition-colors hover:text-on-inv"
           >
             Live
           </Link>
           <Link
             href="/admin"
-            className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-on-inv/70 hover:text-on-inv"
+            className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-on-inv/70 transition-colors hover:text-on-inv"
           >
             Admin
           </Link>
@@ -44,7 +44,7 @@ export function SiteFooter() {
       <div className="border-t border-on-inv/10">
         <div className="container flex h-12 items-center justify-between font-mono-data text-[10px] uppercase tracking-[0.25em] text-on-inv/45">
           <span>© {new Date().getFullYear()} FCDSA</span>
-          <span>One District · One Spirit · One Goal</span>
+          <span>Province of Iloilo · Philippines</span>
         </div>
       </div>
     </footer>

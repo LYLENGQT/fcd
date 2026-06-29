@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import type { MedalTallyRow } from "@/lib/database.types";
 
 const MEDAL_DOT: Record<"gold" | "silver" | "bronze", string> = {
-  gold: "bg-[hsl(41,73%,56%)]",
-  silver: "bg-[hsl(220,8%,72%)]",
-  bronze: "bg-[hsl(24,55%,48%)]",
+  gold: "bg-gold",
+  silver: "bg-silver",
+  bronze: "bg-bronze",
 };
 
 const RANK_ACCENT: Record<number, string> = {
@@ -30,7 +30,13 @@ export function TallyTable({
   }
 
   return (
-    <div className="overflow-x-auto border border-ink/15">
+    <>
+      {rows.length > 0 && (
+        <p className="mb-3 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+          Ranked by gold, then silver, then bronze
+        </p>
+      )}
+      <div className="overflow-x-auto border border-ink/15">
       <table className="w-full min-w-[640px] border-collapse">
         <thead>
           <tr className="border-b border-on-inv/15 bg-surface-inv text-on-inv">
@@ -75,7 +81,7 @@ export function TallyTable({
             return (
               <tr
                 key={r.delegation_id}
-                className="group bg-bone transition-colors hover:bg-ink/[0.04]"
+                className="group bg-bone transition-colors hover:bg-ink/[0.06]"
               >
                 <td className="px-4 py-4">
                   <span
@@ -112,7 +118,8 @@ export function TallyTable({
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 

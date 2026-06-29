@@ -33,3 +33,9 @@ yarn-error.log*
 
 # playwright mcp runtime artifacts (screenshots/cache)
 .playwright-mcp/
+
+# tooling / agent runtime caches (not project code)
+.serena/
+.ai/
+__pycache__/
+*.pyc

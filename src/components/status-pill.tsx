@@ -15,9 +15,17 @@ const LABEL: Record<ScheduleStatus, string> = {
   cancelled: "Cancelled",
 };
 
+const TITLE: Record<ScheduleStatus, string> = {
+  scheduled: "Scheduled",
+  ongoing: "In progress",
+  finished: "Event finished",
+  cancelled: "Cancelled",
+};
+
 export function StatusPill({ status }: { status: ScheduleStatus }) {
   return (
     <span
+      title={TITLE[status]}
       className={cn(
         "inline-flex items-center gap-1.5 whitespace-nowrap border px-2.5 py-1 font-mono-data text-[10px] uppercase tracking-[0.18em]",
         STYLES[status]

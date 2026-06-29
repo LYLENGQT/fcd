@@ -49,6 +49,16 @@ export default async function VenuesAdminPage({
           </>
         }
         intro="The competition sites spectators navigate to. Listed publicly with map links."
+        aside={
+          <Link
+            href="/venues"
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-2 font-mono-data text-[11px] uppercase tracking-[0.25em] text-on-inv/60 transition-colors hover:text-gold"
+          >
+            View public ↗
+          </Link>
+        }
       />
 
       <AdminSection className="grid gap-10 lg:grid-cols-12">

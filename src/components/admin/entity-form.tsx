@@ -51,7 +51,11 @@ export function EntityForm({
     >
       {children}
       {error && (
-        <p className="border border-crimson/40 bg-crimson/10 px-3 py-2 font-mono-data text-xs uppercase tracking-[0.15em] text-crimson">
+        <p
+          role="alert"
+          aria-live="assertive"
+          className="border border-crimson/40 bg-crimson/10 px-3 py-2 font-mono-data text-xs uppercase tracking-[0.15em] text-crimson"
+        >
           {error}
         </p>
       )}

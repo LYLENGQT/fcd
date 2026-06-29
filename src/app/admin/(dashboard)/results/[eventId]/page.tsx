@@ -12,7 +12,7 @@ import {
 } from "@/components/admin/admin-ui";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { MedalTag } from "@/components/medals";
-import type { Athlete, Delegation, MedalKind } from "@/lib/database.types";
+import type { Athlete, Delegation, MedalKind, SchoolLevel, GenderDiv } from "@/lib/database.types";
 import { deleteResult } from "../actions";
 import { EncodeForm, type EditingResult } from "./encode-form";
 
@@ -23,7 +23,7 @@ type EventDetail = {
   name: string;
   type: "individual" | "team";
   sports: { name: string } | null;
-  categories: { name: string } | null;
+  categories: { name: string; level: SchoolLevel; gender: GenderDiv } | null;
 };
 
 type ResultRow = {
@@ -48,7 +48,7 @@ export default async function EncodeEventPage({
 
   const { data: event } = await supabase
     .from("events")
-    .select("id, name, type, sports(name), categories(name)")
+    .select("id, name, type, sports(name), categories(name, level, gender)")
     .eq("id", params.eventId)
     .single();
 
@@ -67,7 +67,7 @@ export default async function EncodeEventPage({
       supabase.from("delegations").select("*").order("name"),
       supabase
         .from("athletes")
-        .select("id, first_name, last_name, delegation_id")
+        .select("id, first_name, last_name, delegation_id, gender, level")
         .order("last_name"),
     ]);
 
@@ -75,7 +75,7 @@ export default async function EncodeEventPage({
   const delegations = (delegationsData ?? []) as Delegation[];
   const athletes = (athletesData ?? []) as Pick<
     Athlete,
-    "id" | "first_name" | "last_name" | "delegation_id"
+    "id" | "first_name" | "last_name" | "delegation_id" | "gender" | "level"
   >[];
 
   const editingRow = searchParams.edit
@@ -96,7 +96,7 @@ export default async function EncodeEventPage({
     <>
       <PageHeader
         back={{ href: "/admin/results", label: "All Events" }}
-        eyebrow={`Encoding · ${ev.categories?.name ?? ""} · ${ev.type}`}
+        eyebrow="Encoding"
         title={
           <>
             {ev.sports?.name}
@@ -108,11 +108,27 @@ export default async function EncodeEventPage({
       />
 
       <AdminSection className="grid gap-10 lg:grid-cols-12">
+        {/* Division banner — keep the category unmissable while encoding. */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-l-4 border-gold bg-ink px-5 py-4 text-bone lg:col-span-12">
+          <span className="font-mono-data text-[10px] uppercase tracking-[0.3em] text-bone/55">
+            Now Encoding · Division
+          </span>
+          <span className="font-display text-2xl font-black uppercase leading-none tracking-wide text-gold md:text-3xl">
+            {ev.categories?.name ?? "—"}
+          </span>
+          <span className="ml-auto border border-bone/25 px-2 py-0.5 font-mono-data text-[10px] uppercase tracking-[0.2em] text-bone/60">
+            {ev.type}
+          </span>
+        </div>
+
         <div className="lg:col-span-5">
           <FormCard title={editing ? "Edit result" : "Add result"}>
             <EncodeForm
               eventId={ev.id}
               isTeamEvent={ev.type === "team"}
+              categoryName={ev.categories?.name ?? ""}
+              categoryLevel={ev.categories?.level ?? null}
+              categoryGender={ev.categories?.gender ?? null}
               delegations={delegations}
               athletes={athletes}
               editing={editing}
@@ -126,51 +142,62 @@ export default async function EncodeEventPage({
               No results yet for this event.
             </div>
           ) : (
-            <AdminTable
-              head={
-                <>
-                  <Th>#</Th>
-                  <Th>Delegation</Th>
-                  <Th>Athlete</Th>
-                  <Th>Medal</Th>
-                  <Th>Mark</Th>
-                  <Th align="right">Actions</Th>
-                </>
-              }
-              minWidth={680}
-            >
-              {results.map((r) => (
-                <Tr key={r.id}>
-                  <Td className="font-display text-xl font-black">{r.placement}</Td>
-                  <Td className="font-mono-data text-xs uppercase tracking-[0.15em] text-ink/70">
-                    {r.delegations?.abbrev}
-                  </Td>
-                  <Td className="font-mono-data text-xs text-ink/60">
-                    {r.athletes
-                      ? `${r.athletes.first_name} ${r.athletes.last_name}`
-                      : "Team"}
-                  </Td>
-                  <Td>
-                    <MedalTag medal={r.medal} />
-                  </Td>
-                  <Td className="font-mono-data text-xs text-ink/60">
-                    {r.mark ?? "—"}
-                  </Td>
-                  <Td align="right">
-                    <div className="flex justify-end gap-3">
-                      <Link
-                        href={`/admin/results/${ev.id}?edit=${r.id}`}
-                        scroll={false}
-                        className="font-mono-data text-[11px] uppercase tracking-[0.15em] text-ink/70 underline-offset-4 hover:text-gold-deep hover:underline"
-                      >
-                        Edit
-                      </Link>
-                      <DeleteButton action={deleteResult.bind(null, r.id, ev.id)} />
-                    </div>
-                  </Td>
-                </Tr>
-              ))}
-            </AdminTable>
+            <>
+              <p className="mb-4 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+                {results.length} result{results.length === 1 ? "" : "s"} encoded ·{" "}
+                {results.filter((r) => r.medal === "gold").length}G{" "}
+                {results.filter((r) => r.medal === "silver").length}S{" "}
+                {results.filter((r) => r.medal === "bronze").length}B
+              </p>
+              <AdminTable
+                head={
+                  <>
+                    <Th>Place</Th>
+                    <Th>Delegation</Th>
+                    <Th>Athlete</Th>
+                    <Th>Medal</Th>
+                    <Th>Mark</Th>
+                    <Th align="right">Actions</Th>
+                  </>
+                }
+                minWidth={680}
+              >
+                {results.map((r) => (
+                  <Tr key={r.id}>
+                    <Td className="font-display text-xl font-black">{r.placement}</Td>
+                    <Td
+                      className="font-mono-data text-xs uppercase tracking-[0.15em] text-ink/70"
+                      title={r.delegations?.name ?? undefined}
+                    >
+                      {r.delegations?.abbrev}
+                    </Td>
+                    <Td className="font-mono-data text-xs text-ink/60">
+                      {r.athletes
+                        ? `${r.athletes.first_name} ${r.athletes.last_name}`
+                        : "Team"}
+                    </Td>
+                    <Td>
+                      <MedalTag medal={r.medal} />
+                    </Td>
+                    <Td className="font-mono-data text-xs text-ink/60">
+                      {r.mark ?? "—"}
+                    </Td>
+                    <Td align="right">
+                      <div className="flex justify-end gap-3">
+                        <Link
+                          href={`/admin/results/${ev.id}?edit=${r.id}`}
+                          scroll={false}
+                          className="font-mono-data text-[11px] uppercase tracking-[0.15em] text-ink/70 underline-offset-4 hover:text-gold-deep hover:underline"
+                        >
+                          Edit
+                        </Link>
+                        <DeleteButton action={deleteResult.bind(null, r.id, ev.id)} />
+                      </div>
+                    </Td>
+                  </Tr>
+                ))}
+              </AdminTable>
+            </>
           )}
         </div>
       </AdminSection>

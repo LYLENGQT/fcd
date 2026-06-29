@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Trophy } from "lucide-react";
+import { LogOut, Trophy, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ADMIN_NAV } from "@/lib/constants";
 import { logout } from "@/app/admin/login/actions";
@@ -81,6 +81,13 @@ export function AdminSidebar({
             </p>
           </div>
         </div>
+        <Link
+          href="/"
+          className="mb-2 flex w-full items-center justify-center gap-2 border border-gold/30 px-3 py-2 font-mono-data text-[10px] uppercase tracking-[0.2em] text-gold transition hover:border-gold hover:bg-gold/10"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to site
+        </Link>
         <form action={logout}>
           <button
             type="submit"

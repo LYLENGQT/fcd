@@ -57,9 +57,9 @@ export default async function AnnouncementsPage({
             {announcements.map((a, i) => (
               <article key={a.id} className="py-8">
                 <div className="flex flex-wrap items-center gap-3 font-mono-data text-[10px] uppercase tracking-[0.25em] text-ink/55">
-                  <span>No. {String(i + 1).padStart(3, "0")}</span>
+                  <span>No. {String(from + i + 1).padStart(3, "0")}</span>
                   <span className="h-px w-6 bg-ink/30" />
-                  <time>{formatDateTime(a.published_at)}</time>
+                  <time dateTime={a.published_at}>{formatDateTime(a.published_at)}</time>
                   {a.pinned && (
                     <span className="border border-crimson bg-crimson/10 px-1.5 py-0.5 text-crimson">
                       Pinned

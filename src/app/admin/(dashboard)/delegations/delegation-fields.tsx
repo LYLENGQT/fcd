@@ -1,5 +1,4 @@
-import { Input } from "@/components/ui/input";
-import { Field, ADMIN_CONTROL } from "@/components/admin/admin-ui";
+import { Field, AdminInput } from "@/components/admin/admin-ui";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import type { Delegation } from "@/lib/database.types";
 
@@ -8,33 +7,31 @@ export function DelegationFields({ delegation }: { delegation?: Delegation }) {
   return (
     <>
       <Field label="Name" htmlFor="name">
-        <Input
+        <AdminInput
           id="name"
           name="name"
           required
           defaultValue={delegation?.name}
-          placeholder="Northbridge"
-          className={ADMIN_CONTROL}
+          placeholder="Oton"
         />
       </Field>
       <Field label="Abbreviation" htmlFor="abbrev">
-        <Input
+        <AdminInput
           id="abbrev"
           name="abbrev"
           required
           maxLength={6}
           defaultValue={delegation?.abbrev}
-          placeholder="NBR"
-          className={ADMIN_CONTROL}
+          placeholder="OTN"
         />
       </Field>
       <Field label="Color" htmlFor="color" hint="Used for tally swatches & accents.">
-        <Input
+        <AdminInput
           id="color"
           name="color"
           type="color"
-          defaultValue={delegation?.color ?? "#1e40af"}
-          className={`${ADMIN_CONTROL} h-10 w-24 p-1`}
+          defaultValue={delegation?.color ?? "#287f45"}
+          className="h-10 w-24 p-1"
         />
       </Field>
       <ImageUploadField

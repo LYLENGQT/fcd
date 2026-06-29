@@ -198,13 +198,16 @@ export function Th({
   children,
   align = "left",
   className,
+  title,
 }: {
   children?: ReactNode;
   align?: "left" | "center" | "right";
   className?: string;
+  title?: string;
 }) {
   return (
     <th
+      title={title}
       className={cn(
         "px-4 py-3 font-mono-data text-[10px] uppercase tracking-[0.22em] text-on-inv/70",
         align === "center" && "text-center",
@@ -222,13 +225,16 @@ export function Td({
   children,
   align = "left",
   className,
+  title,
 }: {
   children?: ReactNode;
   align?: "left" | "center" | "right";
   className?: string;
+  title?: string;
 }) {
   return (
     <td
+      title={title}
       className={cn(
         "px-4 py-3 align-middle",
         align === "center" && "text-center",
@@ -244,7 +250,7 @@ export function Td({
 /** A standard bone table row with hover. */
 export function Tr({ children }: { children: ReactNode }) {
   return (
-    <tr className="bg-bone transition-colors hover:bg-ink/[0.04]">{children}</tr>
+    <tr className="bg-bone transition-colors hover:bg-ink/[0.06]">{children}</tr>
   );
 }
 

@@ -29,6 +29,8 @@ const config: Config = {
           DEFAULT: "hsl(var(--gold))",
           deep: "hsl(var(--gold-deep))",
         },
+        silver: "hsl(var(--silver))",
+        bronze: "hsl(var(--bronze))",
         crimson: "hsl(var(--crimson))",
         jade: "hsl(var(--jade))",
         cyan: "hsl(var(--cyan))",

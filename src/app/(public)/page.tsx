@@ -2,12 +2,24 @@ import Link from "next/link";
 import { ArrowUpRight, Radio } from "lucide-react";
 import { RealtimeRefresher } from "@/components/realtime-refresher";
 import { EnvNotice } from "@/components/env-notice";
+import { StatusPill } from "@/components/status-pill";
 import { createClient } from "@/lib/supabase/server";
 import { getTally } from "@/lib/queries";
 import { isSupabaseConfigured } from "@/lib/env";
 import { MEET_TAGLINE, MEET_START, MEET_END } from "@/lib/constants";
-import { getMeetDay } from "@/lib/utils";
-import type { Announcement, MedalTallyRow } from "@/lib/database.types";
+import { getMeetDay, formatTime } from "@/lib/utils";
+import type { Announcement, MedalTallyRow, ScheduleStatus } from "@/lib/database.types";
+
+type TodayRow = {
+  id: string;
+  venue: string;
+  start_at: string;
+  status: ScheduleStatus;
+  events: { name: string; sports: { name: string } | null } | null;
+};
+
+const manilaDay = (iso: string | Date) =>
+  new Date(iso).toLocaleDateString("en-PH", { timeZone: "Asia/Manila" });
 
 export const revalidate = 30;
 
@@ -32,33 +44,50 @@ export default async function HomePage() {
   }
 
   const supabase = createClient();
-  const [tally, { data: annData }, { data: liveData }] = await Promise.all([
-    getTally(),
-    supabase
-      .from("announcements")
-      .select("*")
-      .eq("published", true)
-      .order("pinned", { ascending: false })
-      .order("published_at", { ascending: false })
-      .limit(3),
-    supabase
-      .from("livestreams")
-      .select("id")
-      .eq("is_live", true)
-      .limit(1),
-  ]);
+  const [tally, { data: annData }, { data: liveData }, { count: delegationTotal }, { data: schedData }] =
+    await Promise.all([
+      getTally(),
+      supabase
+        .from("announcements")
+        .select("*")
+        .eq("published", true)
+        .order("pinned", { ascending: false })
+        .order("published_at", { ascending: false })
+        .limit(3),
+      supabase
+        .from("livestreams")
+        .select("id")
+        .eq("is_live", true)
+        .limit(1),
+      supabase.from("delegations").select("id", { count: "exact", head: true }),
+      supabase
+        .from("schedules")
+        .select("id, venue, start_at, status, events(name, sports(name))")
+        .order("start_at"),
+    ]);
 
   const announcements = (annData ?? []) as Announcement[];
   const hasLive = (liveData ?? []).length > 0;
   const topTally = (tally as MedalTallyRow[]).slice(0, 5);
   const totalGold = tally.reduce((s, r) => s + (r.gold ?? 0), 0);
   const totalMedals = tally.reduce((s, r) => s + (r.total ?? 0), 0);
-  const delegationCount = tally.length;
+  const delegationCount = delegationTotal ?? tally.length;
 
   const today = new Date();
   const meet = getMeetDay(MEET_START, MEET_END, today);
   const dayNumber = String(meet.day).padStart(2, "0");
   const totalDays = String(meet.total).padStart(2, "0");
+
+  // Today's fixtures (Manila) — reused across the strip, stat board, and quick-links.
+  const todayKey = manilaDay(today);
+  const todayRows = ((schedData ?? []) as unknown as TodayRow[]).filter(
+    (r) => manilaDay(r.start_at) === todayKey
+  );
+  const todayCount = todayRows.length;
+  const nowItem = todayRows.find((r) => r.status === "ongoing") ?? null;
+  const nextItem =
+    todayRows.find((r) => r.status !== "ongoing" && new Date(r.start_at) > today) ?? null;
+  const firstItem = todayRows[0] ?? null;
 
   return (
     <>
@@ -176,6 +205,59 @@ export default async function HomePage() {
                 </Link>
               )}
             </div>
+
+            {/* Happening Now / Up Next strip */}
+            {(nowItem || nextItem || firstItem) && (
+              <Link
+                href="/schedule"
+                className="rise group mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-on-inv/15 pt-6"
+                style={{ animationDelay: "260ms" }}
+              >
+                {nowItem ? (
+                  <span className="flex items-center gap-3">
+                    <span className="flex items-center gap-2 font-mono-data text-[10px] uppercase tracking-[0.2em] text-on-inv/45">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-crimson pulse-dot" />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-crimson" />
+                      </span>
+                      Now
+                    </span>
+                    <span className="font-display text-lg font-bold uppercase tracking-wide text-on-inv">
+                      {nowItem.events?.name}
+                    </span>
+                    <span className="font-editorial text-sm italic text-on-inv/65">
+                      {nowItem.events?.sports?.name} · {nowItem.venue}
+                    </span>
+                    <StatusPill status={nowItem.status} />
+                  </span>
+                ) : nextItem ? (
+                  <span className="flex items-center gap-3">
+                    <span className="font-mono-data text-[10px] uppercase tracking-[0.2em] text-on-inv/45">
+                      Up Next
+                    </span>
+                    <span className="font-mono-data text-sm font-medium tabular-nums tracking-wide text-gold">
+                      {formatTime(nextItem.start_at)}
+                    </span>
+                    <span className="font-display text-lg font-bold uppercase tracking-wide text-on-inv">
+                      {nextItem.events?.name}
+                    </span>
+                    <span className="font-editorial text-sm italic text-on-inv/65">
+                      {nextItem.events?.sports?.name} · {nextItem.venue}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-3">
+                    <span className="font-mono-data text-[10px] uppercase tracking-[0.2em] text-on-inv/45">
+                      Today
+                    </span>
+                    <span className="font-editorial text-sm italic text-on-inv/65">
+                      First event at {formatTime(firstItem!.start_at)}
+                    </span>
+                  </span>
+                )}
+                <ArrowUpRight className="h-4 w-4 text-on-inv/45 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-on-inv" />
+              </Link>
+            )}
           </div>
 
           {/* Right: stat board */}
@@ -200,11 +282,12 @@ export default async function HomePage() {
               </span>
             </div>
 
-            <dl className="mt-6 grid grid-cols-3 gap-px overflow-hidden border border-on-inv/15 bg-on-inv/10">
+            <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden border border-on-inv/15 bg-on-inv/10">
               {[
-                { k: "Delegations", v: delegationCount || 23 },
+                { k: "Delegations", v: delegationCount },
                 { k: "Total Gold", v: totalGold },
                 { k: "Medals Won", v: totalMedals },
+                { k: "Events Today", v: todayCount },
               ].map((s) => (
                 <div key={s.k} className="bg-surface-inv px-3 py-4">
                   <dt className="font-mono-data text-[10px] uppercase tracking-[0.18em] text-on-inv/55">
@@ -253,7 +336,7 @@ export default async function HomePage() {
             </div>
             <Link
               href="/tally"
-              className="group inline-flex items-center gap-2 font-mono-data text-xs uppercase tracking-[0.25em] text-ink/70 hover:text-ink"
+              className="group inline-flex items-center gap-2 font-mono-data text-xs uppercase tracking-[0.25em] text-ink/70 transition-colors hover:text-ink"
             >
               View full tally
               <ArrowUpRight className="h-4 w-4 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -273,7 +356,7 @@ export default async function HomePage() {
                   <li key={row.delegation_id}>
                     <Link
                       href={`/delegations/${row.slug}`}
-                      className="group grid grid-cols-12 items-center gap-4 py-6 transition-colors hover:bg-ink/[0.04]"
+                      className="group grid grid-cols-12 items-center gap-4 py-6 transition-colors hover:bg-ink/[0.06]"
                     >
                       <span className="num-outline-row col-span-1 font-display text-5xl font-black md:text-6xl">
                         {String(row.rank).padStart(2, "0")}
@@ -332,7 +415,7 @@ export default async function HomePage() {
                 </span>
                 <Link
                   href="/announcements"
-                  className="font-mono-data text-[10px] uppercase tracking-[0.25em] text-on-inv/70 hover:text-on-inv"
+                  className="font-mono-data text-[10px] uppercase tracking-[0.25em] text-on-inv/70 transition-colors hover:text-on-inv"
                 >
                   Archive →
                 </Link>
@@ -382,7 +465,7 @@ export default async function HomePage() {
             <div className="mt-3 grid grid-cols-2 gap-3">
               {[
                 { href: "/schedule", label: "Schedule", caption: "Daily fixtures & venues" },
-                { href: "/delegations", label: "Delegations", caption: "23 schools competing" },
+                { href: "/delegations", label: "Delegations", caption: "Town teams & medals" },
                 { href: "/athletes", label: "Athletes", caption: "Roster & profiles" },
                 { href: "/livestream", label: "Livestream", caption: "Broadcast feed" },
               ].map((item, i) => (
@@ -391,9 +474,16 @@ export default async function HomePage() {
                   href={item.href}
                   className="group relative flex aspect-[5/4] flex-col justify-between overflow-hidden border border-ink bg-bone p-4 transition hover:bg-highlight hover:text-on-highlight"
                 >
-                  <span className="font-mono-data text-[10px] uppercase tracking-[0.25em] text-ink/55 group-hover:text-on-highlight/55">
-                    /{String(i + 1).padStart(2, "0")}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono-data text-[10px] uppercase tracking-[0.25em] text-ink/55 group-hover:text-on-highlight/55">
+                      /{String(i + 1).padStart(2, "0")}
+                    </span>
+                    {item.href === "/schedule" && todayCount > 0 && (
+                      <span className="border border-gold bg-gold/15 px-1.5 py-px font-mono-data text-[10px] uppercase tracking-[0.18em] text-gold-deep group-hover:border-on-highlight/40 group-hover:text-on-highlight">
+                        {todayCount} today
+                      </span>
+                    )}
+                  </div>
                   <div>
                     <div className="font-display text-3xl font-black uppercase leading-none tracking-tight">
                       {item.label}
@@ -431,10 +521,10 @@ function Medal({
 }) {
   const swatch =
     tone === "gold"
-      ? "bg-[hsl(41,73%,56%)]"
+      ? "bg-gold"
       : tone === "silver"
-      ? "bg-[hsl(220,8%,72%)]"
-      : "bg-[hsl(24,55%,48%)]";
+      ? "bg-silver"
+      : "bg-bronze";
   return (
     <div>
       <div className="flex items-center gap-1.5 font-mono-data text-[10px] uppercase tracking-[0.18em] text-ink/50">

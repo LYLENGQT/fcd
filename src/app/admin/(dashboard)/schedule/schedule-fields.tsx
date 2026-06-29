@@ -1,6 +1,4 @@
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Field, ADMIN_CONTROL } from "@/components/admin/admin-ui";
+import { Field, AdminInput, AdminSelect } from "@/components/admin/admin-ui";
 import { isoToInputValue } from "@/lib/utils";
 import type { Schedule } from "@/lib/database.types";
 
@@ -22,12 +20,11 @@ export function ScheduleFields({
   return (
     <>
       <Field label="Event" htmlFor="event_id">
-        <Select
+        <AdminSelect
           id="event_id"
           name="event_id"
           required
           defaultValue={schedule?.event_id ?? ""}
-          className={ADMIN_CONTROL}
         >
           <option value="" disabled>
             Select event…
@@ -37,40 +34,37 @@ export function ScheduleFields({
               {e.sports?.name} — {e.name} ({e.categories?.name})
             </option>
           ))}
-        </Select>
+        </AdminSelect>
       </Field>
       <Field label="Venue" htmlFor="venue">
-        <Input
+        <AdminInput
           id="venue"
           name="venue"
           required
           defaultValue={schedule?.venue}
           placeholder="Main Oval"
-          className={ADMIN_CONTROL}
         />
       </Field>
       <Field label="Start time" htmlFor="start_at">
-        <Input
+        <AdminInput
           id="start_at"
           name="start_at"
           type="datetime-local"
           required
           defaultValue={schedule ? isoToInputValue(schedule.start_at) : undefined}
-          className={ADMIN_CONTROL}
         />
       </Field>
       <Field label="Status" htmlFor="status">
-        <Select
+        <AdminSelect
           id="status"
           name="status"
           defaultValue={schedule?.status ?? "scheduled"}
-          className={ADMIN_CONTROL}
         >
           <option value="scheduled">Scheduled</option>
           <option value="ongoing">Ongoing</option>
           <option value="finished">Finished</option>
           <option value="cancelled">Cancelled</option>
-        </Select>
+        </AdminSelect>
       </Field>
     </>
   );

@@ -16,11 +16,26 @@ const BASE = `http://localhost:${PORT}`;
 const ROUTES: Record<string, number[]> = {
   "/": [200],
   "/tally": [200],
+  "/standings": [200],
   "/schedule": [200],
+  "/results": [200],
+  "/venues": [200],
   "/delegations": [200],
   "/athletes": [200],
   "/announcements": [200],
   "/livestream": [200],
+  "/host/overview": [200],
+  "/host/accommodation": [200],
+  "/host/food-dining": [200],
+  "/host/tourist-spots": [200],
+  "/host/transportation": [200],
+  "/host/map": [200],
+  "/host/emergency": [200],
+  "/host/committees": [200],
+  "/records": [200],
+  "/mascot": [200],
+  "/feedback": [200],
+  "/tally/breakdown": [200],
   "/admin/login": [200],
   "/admin": [200, 307, 302], // redirects to /admin/login when unauthenticated
   "/sitemap.xml": [200],
@@ -66,7 +81,7 @@ async function main() {
       const pass = okCodes.includes(status);
       if (!pass) failures++;
       console.log(
-        `  ${pass ? "✓" : "✗"} ${path.padEnd(18)} → ${status} (expected ${okCodes.join("/")})`
+        `  ${pass ? "✓" : "✗"} ${path.padEnd(22)} → ${status} (expected ${okCodes.join("/")})`
       );
     }
   } finally {

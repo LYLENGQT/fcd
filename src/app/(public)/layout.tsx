@@ -7,9 +7,11 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <SiteHeader />
-      <main className="grid-bg flex-1 bg-bone text-ink">{children}</main>
+      <main id="main" tabIndex={-1} className="grid-bg flex-1 bg-bone text-ink focus:outline-none">
+        {children}
+      </main>
       <SiteFooter />
     </div>
   );

@@ -30,6 +30,8 @@
     --bone-2: 146 26% 89%;  /* deeper mint for form cards */
     --gold: 41 74% 55%;     /* torch-flame gold accent (from the logo) */
     --gold-deep: 36 80% 40%;
+    --silver: 220 8% 72%;   /* true silver-grey medal (canvas is light in both themes) */
+    --bronze: 24 55% 48%;   /* true bronze medal */
     --crimson: 352 76% 44%; /* live / destructive */
     --jade: 152 56% 36%;    /* bright emerald accent */
     --cyan: 168 78% 44%;    /* electric cyan-green — glow/edge accent (cert banners) */
@@ -96,6 +98,13 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  }
+  /* Consistent brand-gold keyboard focus ring on links & buttons. Form controls
+     supply their own rings (see ui/input, ui/select, feedback-form). :where()
+     keeps specificity at 0 so component focus styles always win. */
+  :where(a[href], button, [role="button"], summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid hsl(var(--gold));
+    outline-offset: 2px;
   }
 }
 
@@ -227,5 +236,74 @@
   .num-outline-row {
     -webkit-text-stroke: 1.5px hsl(var(--ink) / 0.4);
     color: transparent;
+  }
+
+  /* ── "Alive" image motion ──────────────────────────────────────────
+     Ken Burns: slow cinematic zoom/pan on feature photos. The image must
+     sit inside an `overflow-hidden` frame. */
+  @keyframes ken-burns {
+    0%   { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.08) translate(-1.5%, -1%); }
+  }
+  .ken-burns {
+    animation: ken-burns 22s ease-in-out infinite alternate;
+    transform-origin: 50% 45%;
+    will-change: transform;
+  }
+
+  /* Scroll-reveal: elements tagged [data-reveal] fade + rise as they enter
+     the viewport. The hidden state is scoped under `.reveal-ready` (added by
+     the ScrollReveal component on mount) so no-JS / pre-hydration paints show
+     content normally — never a stuck-hidden page. */
+  .reveal-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s cubic-bezier(.2,.65,.2,1),
+      transform 0.7s cubic-bezier(.2,.65,.2,1);
+  }
+  .reveal-ready [data-reveal].reveal-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Hover sheen: a soft gold light band sweeps across an image frame on hover.
+     Apply `.sheen` to an `overflow-hidden` frame. */
+  .sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      hsl(var(--gold) / 0.28) 50%,
+      transparent 70%
+    );
+    transform: translateX(-130%);
+    transition: transform 0.85s ease;
+  }
+  .sheen:hover::after {
+    transform: translateX(130%);
+  }
+
+  /* Respect reduced-motion: kill the new motion AND calm the existing loops. */
+  @media (prefers-reduced-motion: reduce) {
+    .ken-burns,
+    .animate-marquee,
+    .spin-slow,
+    .pulse-dot,
+    .rise {
+      animation: none !important;
+    }
+    .reveal-ready [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+    .sheen::after {
+      display: none !important;
+    }
   }
 }

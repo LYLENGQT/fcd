@@ -4,11 +4,15 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
-import { MedalTag } from "@/components/medals";
+import { MedalTag, MedalCounts } from "@/components/medals";
 import { Pagination } from "@/components/pagination";
 import { PAGE_SIZE_PUBLIC } from "@/lib/constants";
 import { parsePage, pageRange } from "@/lib/utils";
-import type { Delegation, MedalKind } from "@/lib/database.types";
+import type {
+  Delegation,
+  MedalKind,
+  MedalByDelegationSportRow,
+} from "@/lib/database.types";
 
 export const revalidate = 60;
 
@@ -35,11 +39,18 @@ export async function generateMetadata({
 
 type ResultRow = {
   id: string;
+  event_id: string;
   placement: number;
   medal: MedalKind;
   mark: string | null;
   events: { name: string; sports: { name: string } | null } | null;
   athletes: { first_name: string; last_name: string } | null;
+};
+
+const ordinal = (n: number) => {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
 };
 
 export default async function DelegationDetailPage({
@@ -63,6 +74,8 @@ export default async function DelegationDetailPage({
     { data: athletesData, count: athletesCount },
     { data: resultsData, count: resultsCount },
     { data: tallyRow },
+    { data: standingRow },
+    { data: strengthData },
   ] = await Promise.all([
     supabase
       .from("athletes")
@@ -73,17 +86,27 @@ export default async function DelegationDetailPage({
     supabase
       .from("results")
       .select(
-        "id, placement, medal, mark, events(name, sports(name)), athletes(first_name, last_name)",
+        "id, event_id, placement, medal, mark, events(name, sports(name)), athletes(first_name, last_name)",
         { count: "exact" },
       )
       .eq("delegation_id", delegation.id)
-      .order("medal")
+      .order("placement")
+      .order("event_id")
       .range(r.from, r.to),
     supabase
       .from("medal_tally")
       .select("gold, silver, bronze, total, rank")
       .eq("delegation_id", delegation.id)
       .single(),
+    supabase
+      .from("standings")
+      .select("points, rank")
+      .eq("delegation_id", delegation.id)
+      .single(),
+    supabase
+      .from("medal_by_delegation_sport")
+      .select("sport_name, gold, silver, bronze, total")
+      .eq("delegation_id", delegation.id),
   ]);
 
   const athletes = athletesData ?? [];
@@ -93,13 +116,21 @@ export default async function DelegationDetailPage({
   const t = tallyRow as
     | { gold: number; silver: number; bronze: number; total: number; rank: number }
     | null;
+  const s = standingRow as { points: number; rank: number } | null;
+  const strength = ((strengthData ?? []) as unknown as Array<
+    Pick<MedalByDelegationSportRow, "sport_name" | "gold" | "silver" | "bronze" | "total">
+  >)
+    .slice()
+    .sort((x, y) => y.total - x.total);
 
   return (
     <>
       <PageHeader
         accent={delegation.color}
         back={{ href: "/delegations", label: "All Delegations" }}
-        eyebrow={`${delegation.abbrev}${t ? ` · Rank #${t.rank}` : ""}`}
+        eyebrow={`${delegation.abbrev}${t ? ` · Rank #${t.rank}` : ""}${
+          s ? ` · ${s.points} pts · Pts rank #${s.rank}` : ""
+        }`}
         title={
           delegation.logo_url ? (
             <span className="flex items-center gap-4">
@@ -120,19 +151,20 @@ export default async function DelegationDetailPage({
         }
         aside={
           t ? (
-            <dl className="grid grid-cols-4 gap-px overflow-hidden border border-on-inv/15 bg-on-inv/10">
+            <dl className="grid grid-cols-4 gap-px overflow-hidden border border-on-inv/15 bg-on-inv/10 sm:grid-cols-5">
               {[
                 { k: "Gold", v: t.gold },
                 { k: "Silver", v: t.silver },
                 { k: "Bronze", v: t.bronze },
                 { k: "Total", v: t.total },
-              ].map((s) => (
-                <div key={s.k} className="bg-surface-inv px-3 py-4 text-center">
+                ...(s ? [{ k: "Points", v: s.points }] : []),
+              ].map((stat) => (
+                <div key={stat.k} className="bg-surface-inv px-3 py-4 text-center">
                   <dt className="font-mono-data text-[9px] uppercase tracking-[0.16em] text-on-inv/55">
-                    {s.k}
+                    {stat.k}
                   </dt>
                   <dd className="mt-1 font-display text-2xl font-black text-on-inv">
-                    {s.v}
+                    {stat.v}
                   </dd>
                 </div>
               ))}
@@ -140,6 +172,37 @@ export default async function DelegationDetailPage({
           ) : undefined
         }
       />
+
+      {strength.length > 0 ? (
+        <section className="container pt-14 md:pt-20">
+          <header className="flex items-end justify-between border-b-2 border-ink pb-3">
+            <h2 className="font-display text-2xl font-black uppercase tracking-tight md:text-4xl">
+              Strength by Sport
+            </h2>
+            <span className="font-mono-data text-[11px] uppercase tracking-[0.25em] text-ink/50">
+              {strength.length} sport{strength.length === 1 ? "" : "s"}
+            </span>
+          </header>
+          <ul className="divide-y divide-ink/12">
+            {strength.map((sp) => (
+              <li
+                key={sp.sport_name}
+                className="flex items-center justify-between gap-4 py-4"
+              >
+                <div className="font-display text-lg font-bold uppercase leading-tight tracking-wide">
+                  {sp.sport_name}
+                </div>
+                <div className="flex items-center gap-5">
+                  <MedalCounts gold={sp.gold} silver={sp.silver} bronze={sp.bronze} />
+                  <span className="font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+                    {sp.total} total
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="container grid gap-12 py-14 md:py-20 lg:grid-cols-5">
         {/* Medals won */}
@@ -160,22 +223,26 @@ export default async function DelegationDetailPage({
           ) : (
             <ul className="divide-y divide-ink/12">
               {results.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex items-baseline justify-between gap-4 py-4"
-                >
-                  <div>
-                    <div className="font-display text-lg font-bold uppercase leading-tight tracking-wide">
-                      {r.events?.name}
+                <li key={r.id}>
+                  <Link
+                    href={`/results/${r.event_id}`}
+                    className="flex items-baseline justify-between gap-4 py-4 transition-colors hover:bg-ink/[0.04] hover:text-gold-deep"
+                  >
+                    <div>
+                      <div className="font-display text-lg font-bold uppercase leading-tight tracking-wide">
+                        {r.events?.name}
+                      </div>
+                      <div className="mt-0.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/55">
+                        {r.events?.sports?.name}
+                        {r.athletes
+                          ? ` · ${r.athletes.first_name} ${r.athletes.last_name}`
+                          : " · Team"}
+                        {` · ${ordinal(r.placement)}`}
+                        {r.mark ? ` · ${r.mark}` : ""}
+                      </div>
                     </div>
-                    <div className="mt-0.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/55">
-                      {r.events?.sports?.name}
-                      {r.athletes
-                        ? ` · ${r.athletes.first_name} ${r.athletes.last_name}`
-                        : " · Team"}
-                    </div>
-                  </div>
-                  <MedalTag medal={r.medal} />
+                    <MedalTag medal={r.medal} />
+                  </Link>
                 </li>
               ))}
             </ul>

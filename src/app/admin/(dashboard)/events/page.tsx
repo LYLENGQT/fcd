@@ -126,7 +126,23 @@ export default async function EventsAdminPage({
                   {e.type}
                 </Td>
                 <Td align="center" className="font-mono-data tabular-nums">
-                  {e.results?.[0]?.count ?? 0}
+                  {(() => {
+                    const resultCount = e.results?.[0]?.count ?? 0;
+                    return (
+                      <Link
+                        href={`/admin/results/${e.id}`}
+                        title="Encode results for this event"
+                        className="inline-flex items-center gap-2 text-ink/70 underline-offset-4 hover:text-gold-deep hover:underline"
+                      >
+                        {resultCount}
+                        {resultCount === 0 ? (
+                          <span className="font-mono-data text-[9px] uppercase tracking-[0.2em] text-crimson">
+                            Pending
+                          </span>
+                        ) : null}
+                      </Link>
+                    );
+                  })()}
                 </Td>
                 <Td align="right">
                   <div className="flex justify-end gap-3">

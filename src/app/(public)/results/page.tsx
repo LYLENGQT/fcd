@@ -16,18 +16,29 @@ type EventRow = {
   type: string;
   sports: { name: string } | null;
   categories: { name: string } | null;
-  results: { count: number }[];
+  results: {
+    medal: string;
+    delegations: { abbrev: string } | null;
+    athletes: { last_name: string } | null;
+  }[];
 };
 
 export default async function ResultsBrowsePage() {
   const supabase = createClient();
-  const { data } = await supabase
-    .from("events")
-    .select("id, name, type, sports(name), categories(name), results(count)")
-    .order("created_at", { ascending: true });
+  const [{ data }, { count: totalEvents }] = await Promise.all([
+    supabase
+      .from("events")
+      .select(
+        "id, name, type, sports(name), categories(name), results(medal, delegations(abbrev), athletes(last_name))"
+      )
+      .order("created_at", { ascending: true }),
+    supabase.from("events").select("id", { count: "exact", head: true }),
+  ]);
 
   const events = (data ?? []) as unknown as EventRow[];
-  const withResults = events.filter((e) => (e.results?.[0]?.count ?? 0) > 0);
+  const withResults = events.filter((e) => (e.results?.length ?? 0) > 0);
+  // `events` is fetched whole (no .range()), so eventsWithResults is global, not page-scoped.
+  const eventsWithResults = withResults.length;
 
   // Group by sport.
   const bySport = new Map<string, EventRow[]>();
@@ -52,6 +63,13 @@ export default async function ResultsBrowsePage() {
         intro="Every finished event and its podium. Pick an event to see the full standings."
       />
 
+      <section className="container pt-10 md:pt-14">
+        <p className="font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+          <span className="text-gold-deep">{eventsWithResults}</span> of{" "}
+          {totalEvents ?? eventsWithResults} events with results
+        </p>
+      </section>
+
       <section className="container py-14 md:py-20">
         {bySport.size === 0 ? (
           <div className="border border-ink/15 px-6 py-16 text-center font-editorial text-2xl italic text-ink/45">
@@ -70,8 +88,11 @@ export default async function ResultsBrowsePage() {
                   </span>
                 </header>
                 <ul className="divide-y divide-ink/12">
-                  {evs.map((e) => (
-                    <li key={e.id}>
+                  {evs.map((e) => {
+                    const placements = e.results?.length ?? 0;
+                    const gold = e.results?.find((r) => r.medal === "gold");
+                    return (
+                    <li key={e.id} className="transition-colors hover:bg-ink/[0.04]">
                       <Link
                         href={`/results/${e.id}`}
                         className="group flex items-center justify-between gap-4 py-4 transition-colors hover:text-gold-deep"
@@ -81,13 +102,25 @@ export default async function ResultsBrowsePage() {
                             {e.name}
                           </div>
                           <div className="mt-0.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/55">
-                            {e.categories?.name} · {e.type}
+                            {e.categories?.name} · {e.type} · {placements} placement{placements === 1 ? "" : "s"}
                           </div>
+                          {gold?.delegations && (
+                            <div className="mt-1 flex items-center gap-1.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/70">
+                              <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold ring-1 ring-gold-deep/40" aria-hidden />
+                              <span className="text-gold-deep">Gold</span>
+                              <span className="text-ink/45">·</span>
+                              <span>{gold.delegations.abbrev}</span>
+                              {gold.athletes?.last_name && (
+                                <span className="text-ink/55">— {gold.athletes.last_name}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <ArrowUpRight className="h-5 w-5 shrink-0 opacity-40 transition group-hover:opacity-100" />
+                        <ArrowUpRight aria-hidden className="h-5 w-5 shrink-0 opacity-40 transition group-hover:opacity-100" />
                       </Link>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </div>
             ))}
