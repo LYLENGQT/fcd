@@ -50,7 +50,9 @@ export const metadata: Metadata = {
     description: MEET_TAGLINE,
     type: "website",
     url: SITE_URL,
+    images: [{ url: "/logo.jpg", width: 1366, height: 2049, alt: MEET_FULL_NAME }],
   },
+  icons: { icon: "/logo.jpg", apple: "/logo.jpg" },
 };
 
 export default function RootLayout({

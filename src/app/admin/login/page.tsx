@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MEET_TAGLINE } from "@/lib/constants";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LoginForm } from "./login-form";
@@ -106,11 +107,17 @@ export default function LoginPage({
 
         <div className="flex flex-1 items-center justify-center px-6 pb-20 sm:px-10">
           <div className="rise w-full max-w-sm" style={{ animationDelay: "100ms" }}>
-            {/* Compact wordmark (shown when the left panel is hidden) */}
-            <div className="mb-8 lg:hidden">
-              <span className="font-display text-3xl font-black uppercase leading-none tracking-[0.04em]">
-                FCDSA <span className="text-gold">Control Desk</span>
-              </span>
+            {/* Meet logo, framed as a clean white badge (consistent with the
+                header/footer marks; avoids blend artifacts on the bone panel). */}
+            <div className="mb-8 inline-flex rounded-lg bg-white p-3 shadow-sm ring-1 ring-ink/10">
+              <Image
+                src="/logo.jpg"
+                alt="FCDSA Meet Guimbal 2026"
+                width={1366}
+                height={2049}
+                priority
+                className="h-24 w-auto"
+              />
             </div>
 
             <div className="flex items-center gap-3 font-mono-data text-[11px] uppercase tracking-[0.3em] text-ink/55">

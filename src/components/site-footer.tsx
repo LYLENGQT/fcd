@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import Image from "next/image";
 import { MEET_FULL_NAME, MEET_TAGLINE } from "@/lib/constants";
 
 export function SiteFooter() {
@@ -8,7 +8,15 @@ export function SiteFooter() {
       <div className="container grid gap-8 py-14 md:grid-cols-3">
         <div>
           <div className="flex items-center gap-2.5">
-            <Trophy className="h-5 w-5 text-gold" />
+            <span className="inline-flex items-center justify-center rounded bg-white p-1">
+              <Image
+                src="/logo.jpg"
+                alt="FCDSA Meet Guimbal 2026 logo"
+                width={1366}
+                height={2049}
+                className="h-9 w-auto"
+              />
+            </span>
             <span className="font-display text-2xl font-black uppercase tracking-[0.08em]">
               FCDSA
             </span>
