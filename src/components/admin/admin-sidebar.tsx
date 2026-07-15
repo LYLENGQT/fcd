@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Trophy, ArrowLeft } from "lucide-react";
+import { LogOut, Trophy, ArrowLeft, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ADMIN_NAV } from "@/lib/constants";
 import { logout } from "@/app/admin/login/actions";
@@ -15,9 +15,13 @@ const ENCODER_ALLOWED = ["/admin", "/admin/results", "/admin/schedule"];
 export function AdminSidebar({
   email,
   role,
+  open = false,
+  onClose,
 }: {
   email: string;
   role: UserRole;
+  open?: boolean;
+  onClose?: () => void;
 }) {
   const pathname = usePathname();
   const nav =
@@ -27,7 +31,14 @@ export function AdminSidebar({
   const initial = (email.trim()[0] ?? "?").toUpperCase();
 
   return (
-    <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-on-inv/10 bg-surface-inv text-on-inv">
+    <aside
+      className={cn(
+        "z-50 flex w-60 shrink-0 flex-col border-r border-on-inv/10 bg-surface-inv text-on-inv",
+        "fixed inset-y-0 left-0 h-dvh transition-transform duration-300 ease-out",
+        "md:sticky md:top-0 md:h-screen md:translate-x-0 md:transition-none",
+        open ? "translate-x-0" : "-translate-x-full",
+      )}
+    >
       <div className="flex items-center gap-2.5 border-b border-on-inv/10 px-5 py-5">
         <Trophy className="h-5 w-5 text-gold" />
         <div className="flex-1">
@@ -39,6 +50,14 @@ export function AdminSidebar({
           </p>
         </div>
         <ThemeToggle />
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close navigation menu"
+          className="text-on-inv/60 transition-colors hover:text-on-inv md:hidden"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
@@ -51,6 +70,7 @@ export function AdminSidebar({
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 "relative block px-3 py-2 font-mono-data text-[11px] uppercase tracking-[0.16em] transition-colors",
                 active

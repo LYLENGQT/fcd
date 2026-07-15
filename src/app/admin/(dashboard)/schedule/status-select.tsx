@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Select } from "@/components/ui/select";
 import { ADMIN_CONTROL } from "@/components/admin/admin-ui";
+import { useToast } from "@/components/admin/toast";
 import { updateScheduleStatus } from "./actions";
 import type { ScheduleStatus } from "@/lib/database.types";
 
@@ -17,6 +18,7 @@ export function StatusSelect({
   current: ScheduleStatus;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -27,7 +29,9 @@ export function StatusSelect({
       disabled={pending}
       onChange={(e) =>
         startTransition(async () => {
-          await updateScheduleStatus(id, e.target.value as ScheduleStatus);
+          const next = e.target.value as ScheduleStatus;
+          await updateScheduleStatus(id, next);
+          toast(`Status set to ${next}`);
           router.refresh();
         })
       }

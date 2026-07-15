@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
+import { useToast } from "@/components/admin/toast";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -14,17 +15,20 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
 export function EntityForm({
   action,
   submitLabel = "Save",
+  successMessage = "Saved",
   resetOnSuccess = true,
   redirectTo,
   children,
 }: {
   action: (formData: FormData) => Promise<ActionResult>;
   submitLabel?: string;
+  successMessage?: string;
   resetOnSuccess?: boolean;
   redirectTo?: string;
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -40,6 +44,7 @@ export function EntityForm({
             return;
           }
           setError(null);
+          toast(successMessage);
           if (resetOnSuccess) formRef.current?.reset();
           if (redirectTo) {
             router.push(redirectTo);
