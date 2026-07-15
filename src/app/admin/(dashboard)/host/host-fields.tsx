@@ -8,7 +8,7 @@ export function EmergencyContactFields({
 }) {
   return (
     <>
-      <Field label="Name" htmlFor="name">
+      <Field label="Name" htmlFor="name" required>
         <AdminInput
           id="name"
           name="name"
@@ -17,7 +17,7 @@ export function EmergencyContactFields({
           placeholder="Passi City Police Station"
         />
       </Field>
-      <Field label="Contact number" htmlFor="contact_number">
+      <Field label="Contact number" htmlFor="contact_number" required>
         <AdminInput
           id="contact_number"
           name="contact_number"
@@ -53,7 +53,7 @@ export function CommitteeFields({
 }) {
   return (
     <>
-      <Field label="Role" htmlFor="role_name">
+      <Field label="Role" htmlFor="role_name" required>
         <AdminInput
           id="role_name"
           name="role_name"
@@ -62,7 +62,7 @@ export function CommitteeFields({
           placeholder="Tournament Manager"
         />
       </Field>
-      <Field label="Person" htmlFor="person_name">
+      <Field label="Person" htmlFor="person_name" required>
         <AdminInput
           id="person_name"
           name="person_name"

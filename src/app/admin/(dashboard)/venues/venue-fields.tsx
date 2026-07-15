@@ -5,7 +5,7 @@ import type { Venue } from "@/lib/database.types";
 export function VenueFields({ venue }: { venue?: Venue }) {
   return (
     <>
-      <Field label="Venue name" htmlFor="name">
+      <Field label="Venue name" htmlFor="name" required>
         <AdminInput
           id="name"
           name="name"

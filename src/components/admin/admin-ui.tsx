@@ -119,17 +119,23 @@ export function FormCard({
   );
 }
 
-/** Label + control wrapper with a mono-data label. */
+/** Label + control wrapper with a mono-data label. Pass `required` to show a
+ *  gold-crimson asterisk, and `error` to show an inline field error (replaces
+ *  the hint when present). */
 export function Field({
   label,
   htmlFor,
   hint,
+  required,
+  error,
   children,
   className,
 }: {
   label: string;
   htmlFor?: string;
   hint?: string;
+  required?: boolean;
+  error?: string;
   children: ReactNode;
   className?: string;
 }) {
@@ -140,9 +146,23 @@ export function Field({
         className="block font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/60"
       >
         {label}
+        {required && (
+          <span className="ml-1 text-crimson" title="Required" aria-hidden>
+            *
+          </span>
+        )}
       </label>
       {children}
-      {hint && <p className="font-mono-data text-[10px] text-ink/45">{hint}</p>}
+      {error ? (
+        <p
+          role="alert"
+          className="font-mono-data text-[10px] uppercase tracking-[0.12em] text-crimson"
+        >
+          {error}
+        </p>
+      ) : hint ? (
+        <p className="font-mono-data text-[10px] text-ink/45">{hint}</p>
+      ) : null}
     </div>
   );
 }

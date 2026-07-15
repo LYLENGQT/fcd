@@ -6,7 +6,7 @@ import type { Delegation } from "@/lib/database.types";
 export function DelegationFields({ delegation }: { delegation?: Delegation }) {
   return (
     <>
-      <Field label="Name" htmlFor="name">
+      <Field label="Name" htmlFor="name" required>
         <AdminInput
           id="name"
           name="name"
@@ -15,7 +15,7 @@ export function DelegationFields({ delegation }: { delegation?: Delegation }) {
           placeholder="Oton"
         />
       </Field>
-      <Field label="Abbreviation" htmlFor="abbrev">
+      <Field label="Abbreviation" htmlFor="abbrev" required>
         <AdminInput
           id="abbrev"
           name="abbrev"

@@ -16,7 +16,7 @@ export function AthleteFields({
   return (
     <>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="First name" htmlFor="first_name">
+        <Field label="First name" htmlFor="first_name" required>
           <AdminInput
             id="first_name"
             name="first_name"
@@ -24,7 +24,7 @@ export function AthleteFields({
             defaultValue={athlete?.first_name}
           />
         </Field>
-        <Field label="Last name" htmlFor="last_name">
+        <Field label="Last name" htmlFor="last_name" required>
           <AdminInput
             id="last_name"
             name="last_name"
@@ -33,7 +33,7 @@ export function AthleteFields({
           />
         </Field>
       </div>
-      <Field label="Delegation" htmlFor="delegation_id">
+      <Field label="Delegation" htmlFor="delegation_id" required>
         <AdminSelect
           id="delegation_id"
           name="delegation_id"

@@ -10,7 +10,7 @@ import type { Livestream } from "@/lib/database.types";
 export function LivestreamFields({ stream }: { stream?: Livestream }) {
   return (
     <>
-      <Field label="Title" htmlFor="title">
+      <Field label="Title" htmlFor="title" required>
         <AdminInput
           id="title"
           name="title"
@@ -22,6 +22,7 @@ export function LivestreamFields({ stream }: { stream?: Livestream }) {
         label="Video URL"
         htmlFor="embed_url"
         hint="Paste a YouTube watch/share link — it is converted to an embed automatically."
+        required
       >
         <AdminInput
           id="embed_url"

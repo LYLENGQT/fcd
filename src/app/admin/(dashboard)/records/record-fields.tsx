@@ -6,7 +6,7 @@ export function RecordFields({ record }: { record?: MeetRecord }) {
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Sport" htmlFor="sport">
+        <Field label="Sport" htmlFor="sport" required>
           <AdminInput
             id="sport"
             name="sport"
@@ -15,7 +15,7 @@ export function RecordFields({ record }: { record?: MeetRecord }) {
             placeholder="Athletics"
           />
         </Field>
-        <Field label="Event" htmlFor="event_name">
+        <Field label="Event" htmlFor="event_name" required>
           <AdminInput
             id="event_name"
             name="event_name"
@@ -26,7 +26,7 @@ export function RecordFields({ record }: { record?: MeetRecord }) {
         </Field>
       </div>
 
-      <Field label="Record holder" htmlFor="record_holder">
+      <Field label="Record holder" htmlFor="record_holder" required>
         <AdminInput
           id="record_holder"
           name="record_holder"

@@ -5,7 +5,7 @@ import type { Category } from "@/lib/database.types";
 export function CategoryFields({ category }: { category?: Category }) {
   return (
     <>
-      <Field label="Category name" htmlFor="name">
+      <Field label="Category name" htmlFor="name" required>
         <AdminInput
           id="name"
           name="name"
@@ -14,7 +14,7 @@ export function CategoryFields({ category }: { category?: Category }) {
           placeholder="Secondary Boys"
         />
       </Field>
-      <Field label="Level" htmlFor="level">
+      <Field label="Level" htmlFor="level" required>
         <AdminSelect
           id="level"
           name="level"
@@ -28,7 +28,7 @@ export function CategoryFields({ category }: { category?: Category }) {
           <option value="secondary">Secondary</option>
         </AdminSelect>
       </Field>
-      <Field label="Division" htmlFor="gender">
+      <Field label="Division" htmlFor="gender" required>
         <AdminSelect
           id="gender"
           name="gender"

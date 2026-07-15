@@ -15,7 +15,7 @@ export function EventFields({
 }) {
   return (
     <>
-      <Field label="Event name" htmlFor="name">
+      <Field label="Event name" htmlFor="name" required>
         <AdminInput
           id="name"
           name="name"
@@ -24,7 +24,7 @@ export function EventFields({
           placeholder="100m Dash"
         />
       </Field>
-      <Field label="Sport" htmlFor="sport_id">
+      <Field label="Sport" htmlFor="sport_id" required>
         <AdminSelect
           id="sport_id"
           name="sport_id"
@@ -41,7 +41,7 @@ export function EventFields({
           ))}
         </AdminSelect>
       </Field>
-      <Field label="Category" htmlFor="category_id">
+      <Field label="Category" htmlFor="category_id" required>
         <AdminSelect
           id="category_id"
           name="category_id"

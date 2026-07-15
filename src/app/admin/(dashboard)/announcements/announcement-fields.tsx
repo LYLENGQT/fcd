@@ -14,7 +14,7 @@ export function AnnouncementFields({
 }) {
   return (
     <>
-      <Field label="Title" htmlFor="title">
+      <Field label="Title" htmlFor="title" required>
         <AdminInput
           id="title"
           name="title"
@@ -22,7 +22,7 @@ export function AnnouncementFields({
           defaultValue={announcement?.title}
         />
       </Field>
-      <Field label="Body" htmlFor="body">
+      <Field label="Body" htmlFor="body" required>
         <AdminTextarea
           id="body"
           name="body"

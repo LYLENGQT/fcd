@@ -19,7 +19,7 @@ export function ScheduleFields({
 }) {
   return (
     <>
-      <Field label="Event" htmlFor="event_id">
+      <Field label="Event" htmlFor="event_id" required>
         <AdminSelect
           id="event_id"
           name="event_id"
@@ -36,7 +36,7 @@ export function ScheduleFields({
           ))}
         </AdminSelect>
       </Field>
-      <Field label="Venue" htmlFor="venue">
+      <Field label="Venue" htmlFor="venue" required>
         <AdminInput
           id="venue"
           name="venue"
@@ -45,7 +45,7 @@ export function ScheduleFields({
           placeholder="Main Oval"
         />
       </Field>
-      <Field label="Start time" htmlFor="start_at">
+      <Field label="Start time" htmlFor="start_at" required>
         <AdminInput
           id="start_at"
           name="start_at"

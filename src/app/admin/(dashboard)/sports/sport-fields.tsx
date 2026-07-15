@@ -5,7 +5,7 @@ import type { Sport } from "@/lib/database.types";
 export function SportFields({ sport }: { sport?: Sport }) {
   return (
     <>
-      <Field label="Sport name" htmlFor="name">
+      <Field label="Sport name" htmlFor="name" required>
         <AdminInput
           id="name"
           name="name"

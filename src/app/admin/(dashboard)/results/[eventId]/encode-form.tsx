@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { Field, AdminInput, AdminSelect } from "@/components/admin/admin-ui";
+import { useToast } from "@/components/admin/toast";
 import { addResult, updateResult } from "../actions";
 import type {
   Athlete,
@@ -59,10 +60,12 @@ export function EncodeForm({
   editing?: EditingResult;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [delegationId, setDelegationId] = useState(editing?.delegation_id ?? "");
   const [athleteId, setAthleteId] = useState(editing?.athlete_id ?? "");
+  const [placement, setPlacement] = useState(String(editing?.placement ?? 1));
 
   // Athletes of the chosen delegation, and the subset eligible for THIS event's
   // division (category level + gender). Gender 'mixed' accepts any gender; a
@@ -111,11 +114,19 @@ export function EncodeForm({
         return;
       }
       if (editing) {
+        toast("Result updated");
         router.push(`/admin/results/${eventId}`);
       } else {
+        toast("Result recorded");
         (document.getElementById("encode-form") as HTMLFormElement)?.reset();
         setDelegationId("");
         setAthleteId("");
+        // Fast sequential entry: advance to the next placement and return
+        // focus to the top of the form for the next competitor.
+        setPlacement((p) => String(Math.min(Number(p) + 1, 8)));
+        requestAnimationFrame(() =>
+          document.getElementById("delegation_id")?.focus(),
+        );
       }
       router.refresh();
     });
@@ -194,7 +205,8 @@ export function EncodeForm({
             id="placement"
             name="placement"
             required
-            defaultValue={String(editing?.placement ?? 1)}
+            value={placement}
+            onChange={(e) => setPlacement(e.target.value)}
           >
             <option value="1">1st (Gold)</option>
             <option value="2">2nd (Silver)</option>
