@@ -72,7 +72,8 @@ export default async function PresentPage() {
             The board awaits its first medal.
           </div>
         ) : (
-          <table className="mt-6 w-full border-collapse">
+          <div className="mt-6 overflow-x-auto">
+          <table className="w-full min-w-[600px] border-collapse">
             <thead>
               <tr className="border-b border-on-inv/20 font-mono-data text-[11px] uppercase tracking-[0.25em] text-on-inv/55">
                 <th className="py-3 text-left">Rank</th>
@@ -125,6 +126,7 @@ export default async function PresentPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </main>

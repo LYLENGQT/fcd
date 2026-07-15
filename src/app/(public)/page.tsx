@@ -358,11 +358,11 @@ export default async function HomePage() {
                       href={`/delegations/${row.slug}`}
                       className="group grid grid-cols-12 items-center gap-4 py-6 transition-colors hover:bg-ink/[0.06]"
                     >
-                      <span className="num-outline-row col-span-1 font-display text-5xl font-black md:text-6xl">
+                      <span className="num-outline-row col-span-2 font-display text-5xl font-black md:col-span-1 md:text-6xl">
                         {String(row.rank).padStart(2, "0")}
                       </span>
 
-                      <div className="col-span-11 md:col-span-5">
+                      <div className="col-span-10 md:col-span-5">
                         <div className="flex items-center gap-3">
                           <span
                             className="inline-block h-4 w-4 rounded-sm ring-2 ring-ink/20"

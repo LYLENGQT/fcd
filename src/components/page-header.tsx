@@ -73,7 +73,7 @@ export function PageHeader({
           </div>
 
           <h1
-            className="rise mt-5 font-display font-black uppercase leading-[0.85] tracking-tight text-[clamp(2.75rem,7vw,5.75rem)]"
+            className="rise mt-5 font-display font-black uppercase leading-[0.85] tracking-tight text-[clamp(3.5rem,7vw,5.75rem)]"
             style={{ animationDelay: "60ms" }}
           >
             {title}
