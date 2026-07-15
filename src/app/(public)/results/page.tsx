@@ -23,6 +23,16 @@ type EventRow = {
   }[];
 };
 
+// Podium rows shown inline under each event. Dots use the true-metal tokens
+// (bg-gold/bg-silver/bg-bronze); labels stay readable on the light canvas —
+// silver has no dark variant, so its name is neutral ink and the dot carries
+// the metal.
+const PODIUM = [
+  { medal: "gold" as const, name: "Gold", dot: "bg-gold ring-gold-deep/40", label: "text-gold-deep" },
+  { medal: "silver" as const, name: "Silver", dot: "bg-silver ring-ink/25", label: "text-ink/60" },
+  { medal: "bronze" as const, name: "Bronze", dot: "bg-bronze ring-bronze/50", label: "text-bronze" },
+];
+
 export default async function ResultsBrowsePage() {
   const supabase = createClient();
   const [{ data }, { count: totalEvents }] = await Promise.all([
@@ -90,7 +100,10 @@ export default async function ResultsBrowsePage() {
                 <ul className="divide-y divide-ink/12">
                   {evs.map((e) => {
                     const placements = e.results?.length ?? 0;
-                    const gold = e.results?.find((r) => r.medal === "gold");
+                    const podium = PODIUM.map((p) => ({
+                      ...p,
+                      r: e.results?.find((x) => x.medal === p.medal),
+                    })).filter((p) => p.r?.delegations);
                     return (
                     <li key={e.id} className="transition-colors hover:bg-ink/[0.04]">
                       <Link
@@ -104,15 +117,22 @@ export default async function ResultsBrowsePage() {
                           <div className="mt-0.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/55">
                             {e.categories?.name} · {e.type} · {placements} placement{placements === 1 ? "" : "s"}
                           </div>
-                          {gold?.delegations && (
-                            <div className="mt-1 flex items-center gap-1.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/70">
-                              <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold ring-1 ring-gold-deep/40" aria-hidden />
-                              <span className="text-gold-deep">Gold</span>
-                              <span className="text-ink/45">·</span>
-                              <span>{gold.delegations.abbrev}</span>
-                              {gold.athletes?.last_name && (
-                                <span className="text-ink/55">— {gold.athletes.last_name}</span>
-                              )}
+                          {podium.length > 0 && (
+                            <div className="mt-1.5 space-y-0.5">
+                              {podium.map((p) => (
+                                <div
+                                  key={p.medal}
+                                  className="flex items-center gap-1.5 font-mono-data text-[11px] uppercase tracking-[0.18em] text-ink/70"
+                                >
+                                  <span className={`inline-block h-1.5 w-1.5 rounded-full ring-1 ${p.dot}`} aria-hidden />
+                                  <span className={p.label}>{p.name}</span>
+                                  <span className="text-ink/40">·</span>
+                                  <span>{p.r!.delegations!.abbrev}</span>
+                                  {p.r!.athletes?.last_name && (
+                                    <span className="text-ink/55">— {p.r!.athletes.last_name}</span>
+                                  )}
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
