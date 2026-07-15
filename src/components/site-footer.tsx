@@ -5,7 +5,7 @@ import { MEET_FULL_NAME, MEET_TAGLINE } from "@/lib/constants";
 export function SiteFooter() {
   return (
     <footer className="bg-surface-inv text-on-inv">
-      <div className="container grid gap-8 py-14 md:grid-cols-3">
+      <div className="container grid gap-6 py-8 md:grid-cols-3 md:items-center md:py-10">
         <div>
           <div className="flex items-center gap-2.5">
             <span className="inline-flex items-center justify-center rounded bg-white p-1">
@@ -25,10 +25,10 @@ export function SiteFooter() {
             {MEET_FULL_NAME}
           </p>
         </div>
-        <div className="font-mono-data text-[11px] uppercase tracking-[0.25em] text-on-inv/55 md:self-center">
+        <div className="font-mono-data text-[11px] uppercase tracking-[0.25em] text-on-inv/55 md:text-center">
           {MEET_TAGLINE}
         </div>
-        <div className="flex items-end justify-start gap-6 md:justify-end">
+        <div className="flex items-center justify-start gap-6 md:justify-end">
           <Link
             href="/announcements"
             className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-on-inv/70 transition-colors hover:text-on-inv"

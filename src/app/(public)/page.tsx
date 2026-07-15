@@ -152,7 +152,7 @@ export default async function HomePage() {
             </div>
 
             <h1
-              className="rise mt-6 font-display font-black leading-[0.82] tracking-tight"
+              className="rise mt-6 font-display font-black leading-[0.92] tracking-tight"
               style={{ animationDelay: "60ms" }}
             >
               <span className="block text-[clamp(4rem,12vw,11rem)] text-on-inv">
