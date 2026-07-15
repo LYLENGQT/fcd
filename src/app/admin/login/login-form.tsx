@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { login, type LoginState } from "./actions";
 
@@ -26,6 +27,7 @@ function SubmitButton() {
 
 export function LoginForm({ redirectTo }: { redirectTo: string }) {
   const [state, formAction] = useFormState<LoginState, FormData>(login, null);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <form action={formAction} className="space-y-5">
@@ -50,15 +52,30 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
         <label htmlFor="password" className={LABEL}>
           Password
         </label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          placeholder="••••••••"
-          className={FIELD}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            required
+            autoComplete="current-password"
+            placeholder="••••••••"
+            className={`${FIELD} pr-11`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            className="absolute inset-y-0 right-0 grid w-11 place-items-center text-ink/45 transition-colors hover:text-ink"
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" aria-hidden />
+            ) : (
+              <Eye className="h-5 w-5" aria-hidden />
+            )}
+          </button>
+        </div>
       </div>
 
       {state?.error && (
