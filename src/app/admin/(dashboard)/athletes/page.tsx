@@ -139,7 +139,7 @@ export default async function AthletesAdminPage({
                     >
                       Edit
                     </Link>
-                    <DeleteButton action={deleteAthlete.bind(null, a.id)} />
+                    <DeleteButton action={deleteAthlete.bind(null, a.id)} itemName={`${a.first_name} ${a.last_name}`} />
                   </div>
                 </Td>
               </Tr>

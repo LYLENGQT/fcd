@@ -152,7 +152,7 @@ export default async function EventsAdminPage({
                     >
                       Edit
                     </Link>
-                    <DeleteButton action={deleteEvent.bind(null, e.id)} />
+                    <DeleteButton action={deleteEvent.bind(null, e.id)} itemName={e.name} />
                   </div>
                 </Td>
               </Tr>

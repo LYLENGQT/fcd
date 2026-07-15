@@ -8,7 +8,9 @@ import {
   Th,
   Td,
   Tr,
+  EmptyState,
 } from "@/components/admin/admin-ui";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { EntityForm } from "@/components/admin/entity-form";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { Pagination } from "@/components/pagination";
@@ -38,21 +40,23 @@ type ScheduleRow = {
 export default async function ScheduleAdminPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: { page?: string; q?: string };
 }) {
   const page = parsePage(searchParams.page);
   const { from, to } = pageRange(page, PAGE_SIZE_ADMIN);
+  const q = (searchParams.q ?? "").trim();
 
   const supabase = createClient();
+  let schedulesQuery = supabase
+    .from("schedules")
+    .select("id, venue, start_at, status, events(name, sports(name))", {
+      count: "exact",
+    })
+    .order("start_at");
+  if (q) schedulesQuery = schedulesQuery.ilike("venue", `%${q}%`);
   const [{ data: schedulesData, count }, { data: eventsData }] =
     await Promise.all([
-      supabase
-        .from("schedules")
-        .select("id, venue, start_at, status, events(name, sports(name))", {
-          count: "exact",
-        })
-        .order("start_at")
-        .range(from, to),
+      schedulesQuery.range(from, to),
       supabase
         .from("events")
         .select("id, name, sports(name), categories(name)")
@@ -61,6 +65,7 @@ export default async function ScheduleAdminPage({
 
   const schedules = (schedulesData ?? []) as unknown as ScheduleRow[];
   const events = (eventsData ?? []) as unknown as EventOpt[];
+  const total = count ?? 0;
 
   return (
     <>
@@ -93,6 +98,21 @@ export default async function ScheduleAdminPage({
         </div>
 
         <div className="lg:col-span-8">
+          <AdminSearch
+            basePath="/admin/schedule"
+            initialQuery={q}
+            placeholder="Search by venue…"
+          />
+          <p className="mb-4 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+            {q
+              ? `${total} match${total === 1 ? "" : "es"} for “${q}”`
+              : `${total} scheduled event${total === 1 ? "" : "s"}`}
+          </p>
+          {schedules.length === 0 ? (
+            <EmptyState>
+              {q ? `No entries match “${q}”.` : "Nothing scheduled yet."}
+            </EmptyState>
+          ) : (
           <AdminTable
             head={
               <>
@@ -125,15 +145,16 @@ export default async function ScheduleAdminPage({
                     >
                       Edit
                     </Link>
-                    <DeleteButton action={deleteSchedule.bind(null, s.id)} />
+                    <DeleteButton action={deleteSchedule.bind(null, s.id)} itemName={s.venue} />
                   </div>
                 </Td>
               </Tr>
             ))}
           </AdminTable>
+          )}
           <Pagination
             page={page}
-            totalCount={count ?? 0}
+            totalCount={total}
             pageSize={PAGE_SIZE_ADMIN}
             basePath="/admin/schedule"
             searchParams={searchParams}

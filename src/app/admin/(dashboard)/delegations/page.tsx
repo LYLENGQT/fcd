@@ -128,6 +128,7 @@ export default async function DelegationsAdminPage({
                     </Link>
                     <DeleteButton
                       action={deleteDelegation.bind(null, d.id)}
+                      itemName={d.name}
                       confirmText={`Delete ${d.name}? This removes its athletes and results.`}
                     />
                   </div>

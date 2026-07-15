@@ -8,7 +8,9 @@ import {
   Th,
   Td,
   Tr,
+  EmptyState,
 } from "@/components/admin/admin-ui";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { EntityForm } from "@/components/admin/entity-form";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { Pagination } from "@/components/pagination";
@@ -23,18 +25,21 @@ export const metadata = { title: "Venues" };
 export default async function VenuesAdminPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: { page?: string; q?: string };
 }) {
   const page = parsePage(searchParams.page);
   const { from, to } = pageRange(page, PAGE_SIZE_ADMIN);
+  const q = (searchParams.q ?? "").trim();
 
   const supabase = createClient();
-  const { data, count } = await supabase
+  let query = supabase
     .from("venues")
     .select("*", { count: "exact" })
-    .order("name")
-    .range(from, to);
+    .order("name");
+  if (q) query = query.ilike("name", `%${q}%`);
+  const { data, count } = await query.range(from, to);
   const venues = (data ?? []) as Venue[];
+  const total = count ?? 0;
 
   return (
     <>
@@ -71,6 +76,21 @@ export default async function VenuesAdminPage({
         </div>
 
         <div className="lg:col-span-8">
+          <AdminSearch
+            basePath="/admin/venues"
+            initialQuery={q}
+            placeholder="Search venues…"
+          />
+          <p className="mb-4 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+            {q
+              ? `${total} match${total === 1 ? "" : "es"} for “${q}”`
+              : `${total} venue${total === 1 ? "" : "s"}`}
+          </p>
+          {venues.length === 0 ? (
+            <EmptyState>
+              {q ? `No venues match “${q}”.` : "No venues yet — add one."}
+            </EmptyState>
+          ) : (
           <AdminTable
             head={
               <>
@@ -112,15 +132,16 @@ export default async function VenuesAdminPage({
                     >
                       Edit
                     </Link>
-                    <DeleteButton action={deleteVenue.bind(null, v.id)} />
+                    <DeleteButton action={deleteVenue.bind(null, v.id)} itemName={v.name} />
                   </div>
                 </Td>
               </Tr>
             ))}
           </AdminTable>
+          )}
           <Pagination
             page={page}
-            totalCount={count ?? 0}
+            totalCount={total}
             pageSize={PAGE_SIZE_ADMIN}
             basePath="/admin/venues"
             searchParams={searchParams}

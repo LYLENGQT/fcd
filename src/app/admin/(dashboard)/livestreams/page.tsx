@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
-import { AdminSection, FormCard, ListHeading } from "@/components/admin/admin-ui";
+import { AdminSection, FormCard, EmptyState } from "@/components/admin/admin-ui";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { EntityForm } from "@/components/admin/entity-form";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { Pagination } from "@/components/pagination";
@@ -16,18 +17,21 @@ export const metadata = { title: "Livestreams" };
 export default async function LivestreamsAdminPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: { page?: string; q?: string };
 }) {
   const page = parsePage(searchParams.page);
   const { from, to } = pageRange(page, PAGE_SIZE_ADMIN);
+  const q = (searchParams.q ?? "").trim();
 
   const supabase = createClient();
-  const { data, count } = await supabase
+  let query = supabase
     .from("livestreams")
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    .order("created_at", { ascending: false });
+  if (q) query = query.ilike("title", `%${q}%`);
+  const { data, count } = await query.range(from, to);
   const streams = (data ?? []) as Livestream[];
+  const total = count ?? 0;
 
   return (
     <>
@@ -54,17 +58,22 @@ export default async function LivestreamsAdminPage({
         </div>
 
         <div className="lg:col-span-8">
-          <ListHeading
-            title="All Feeds"
-            count={count ?? 0}
-            countNoun="feeds"
+          <AdminSearch
+            basePath="/admin/livestreams"
+            initialQuery={q}
+            placeholder="Search feeds…"
           />
+          <p className="mb-4 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+            {q
+              ? `${total} match${total === 1 ? "" : "es"} for “${q}”`
+              : `${total} feed${total === 1 ? "" : "s"}`}
+          </p>
+          {streams.length === 0 ? (
+            <EmptyState>
+              {q ? `No feeds match “${q}”.` : "No feeds yet — add one."}
+            </EmptyState>
+          ) : (
           <div className="mt-4 divide-y divide-ink/12 border-y border-ink/15">
-            {streams.length === 0 && (
-              <p className="py-10 text-center font-editorial text-xl italic text-ink/45">
-                No streams yet.
-              </p>
-            )}
             {streams.map((s) => (
               <div key={s.id} className="flex items-start justify-between gap-4 py-5">
                 <div className="min-w-0">
@@ -93,14 +102,15 @@ export default async function LivestreamsAdminPage({
                   >
                     Edit
                   </Link>
-                  <DeleteButton action={deleteLivestream.bind(null, s.id)} />
+                  <DeleteButton action={deleteLivestream.bind(null, s.id)} itemName={s.title} />
                 </div>
               </div>
             ))}
           </div>
+          )}
           <Pagination
             page={page}
-            totalCount={count ?? 0}
+            totalCount={total}
             pageSize={PAGE_SIZE_ADMIN}
             basePath="/admin/livestreams"
             searchParams={searchParams}

@@ -126,6 +126,7 @@ export default async function HostAdminPage() {
                       </Link>
                       <DeleteButton
                         action={deleteEmergencyContact.bind(null, c.id)}
+                        itemName={c.name}
                       />
                     </div>
                   </Td>
@@ -243,6 +244,7 @@ export default async function HostAdminPage() {
                       </Link>
                       <DeleteButton
                         action={deleteCommittee.bind(null, c.id)}
+                        itemName={c.role_name}
                       />
                     </div>
                   </Td>

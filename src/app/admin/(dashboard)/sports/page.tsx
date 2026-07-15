@@ -8,7 +8,9 @@ import {
   Th,
   Td,
   Tr,
+  EmptyState,
 } from "@/components/admin/admin-ui";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { EntityForm } from "@/components/admin/entity-form";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { Pagination } from "@/components/pagination";
@@ -25,18 +27,21 @@ type SportRow = Sport & { events: { count: number }[] };
 export default async function SportsAdminPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: { page?: string; q?: string };
 }) {
   const page = parsePage(searchParams.page);
   const { from, to } = pageRange(page, PAGE_SIZE_ADMIN);
+  const q = (searchParams.q ?? "").trim();
 
   const supabase = createClient();
-  const { data, count } = await supabase
+  let query = supabase
     .from("sports")
     .select("*, events(count)", { count: "exact" })
-    .order("name")
-    .range(from, to);
+    .order("name");
+  if (q) query = query.ilike("name", `%${q}%`);
+  const { data, count } = await query.range(from, to);
   const sports = (data ?? []) as unknown as SportRow[];
+  const total = count ?? 0;
 
   return (
     <>
@@ -63,6 +68,21 @@ export default async function SportsAdminPage({
         </div>
 
         <div className="lg:col-span-8">
+          <AdminSearch
+            basePath="/admin/sports"
+            initialQuery={q}
+            placeholder="Search sports…"
+          />
+          <p className="mb-4 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+            {q
+              ? `${total} match${total === 1 ? "" : "es"} for “${q}”`
+              : `${total} sport${total === 1 ? "" : "s"}`}
+          </p>
+          {sports.length === 0 ? (
+            <EmptyState>
+              {q ? `No sports match “${q}”.` : "No sports yet — add one."}
+            </EmptyState>
+          ) : (
           <AdminTable
             head={
               <>
@@ -90,15 +110,16 @@ export default async function SportsAdminPage({
                     >
                       Edit
                     </Link>
-                    <DeleteButton action={deleteSport.bind(null, s.id)} />
+                    <DeleteButton action={deleteSport.bind(null, s.id)} itemName={s.name} />
                   </div>
                 </Td>
               </Tr>
             ))}
           </AdminTable>
+          )}
           <Pagination
             page={page}
-            totalCount={count ?? 0}
+            totalCount={total}
             pageSize={PAGE_SIZE_ADMIN}
             basePath="/admin/sports"
             searchParams={searchParams}

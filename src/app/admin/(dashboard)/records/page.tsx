@@ -8,7 +8,9 @@ import {
   Th,
   Td,
   Tr,
+  EmptyState,
 } from "@/components/admin/admin-ui";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { EntityForm } from "@/components/admin/entity-form";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { Pagination } from "@/components/pagination";
@@ -23,20 +25,23 @@ export const metadata = { title: "Hall of Records" };
 export default async function RecordsAdminPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: { page?: string; q?: string };
 }) {
   const page = parsePage(searchParams.page);
   const { from, to } = pageRange(page, PAGE_SIZE_ADMIN);
+  const q = (searchParams.q ?? "").trim();
 
   const supabase = createClient();
-  const { data, count } = await supabase
+  let query = supabase
     .from("records")
     .select("*", { count: "exact" })
     .order("sport")
     .order("sort_order")
-    .order("event_name")
-    .range(from, to);
+    .order("event_name");
+  if (q) query = query.ilike("event_name", `%${q}%`);
+  const { data, count } = await query.range(from, to);
   const records = (data ?? []) as MeetRecord[];
+  const total = count ?? 0;
 
   return (
     <>
@@ -73,6 +78,16 @@ export default async function RecordsAdminPage({
         </div>
 
         <div className="lg:col-span-7">
+          <AdminSearch
+            basePath="/admin/records"
+            initialQuery={q}
+            placeholder="Search records…"
+          />
+          <p className="mb-4 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+            {q
+              ? `${total} match${total === 1 ? "" : "es"} for “${q}”`
+              : `${total} record${total === 1 ? "" : "s"}`}
+          </p>
           {records.length > 0 ? (
             <AdminTable
               head={
@@ -115,20 +130,20 @@ export default async function RecordsAdminPage({
                       >
                         Edit
                       </Link>
-                      <DeleteButton action={deleteRecord.bind(null, r.id)} />
+                      <DeleteButton action={deleteRecord.bind(null, r.id)} itemName={r.event_name} />
                     </div>
                   </Td>
                 </Tr>
               ))}
             </AdminTable>
           ) : (
-            <div className="border border-ink/15 px-6 py-16 text-center font-editorial text-2xl italic text-ink/45">
-              No records yet.
-            </div>
+            <EmptyState>
+              {q ? `No records match “${q}”.` : "No records yet — add one."}
+            </EmptyState>
           )}
           <Pagination
             page={page}
-            totalCount={count ?? 0}
+            totalCount={total}
             pageSize={PAGE_SIZE_ADMIN}
             basePath="/admin/records"
             searchParams={searchParams}

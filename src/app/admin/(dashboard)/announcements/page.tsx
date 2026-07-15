@@ -105,7 +105,7 @@ export default async function AnnouncementsAdminPage({
                   >
                     Edit
                   </Link>
-                  <DeleteButton action={deleteAnnouncement.bind(null, a.id)} />
+                  <DeleteButton action={deleteAnnouncement.bind(null, a.id)} itemName={a.title} />
                 </div>
               </article>
             ))}
