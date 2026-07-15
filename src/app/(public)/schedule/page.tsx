@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ScheduleFilter } from "./schedule-filter";
+import { FilterBar } from "@/components/filter-bar";
 import { PageHeader } from "@/components/page-header";
 import { StatusPill } from "@/components/status-pill";
 import { Pagination } from "@/components/pagination";
@@ -36,10 +36,17 @@ const dayKey = (iso: string) =>
     timeZone: "Asia/Manila",
   });
 
+const STATUS_LABELS: Record<string, string> = {
+  scheduled: "Upcoming",
+  ongoing: "Live",
+  finished: "Finished",
+  cancelled: "Cancelled",
+};
+
 export default async function SchedulePage({
   searchParams,
 }: {
-  searchParams: { sport?: string; page?: string };
+  searchParams: { sport?: string; status?: string; page?: string };
 }) {
   const supabase = createClient();
   const { data } = await supabase
@@ -52,6 +59,7 @@ export default async function SchedulePage({
   const sports = Array.from(
     new Set(rows.map((r) => r.events?.sports?.name).filter(Boolean) as string[])
   ).sort();
+  const statuses = Array.from(new Set(rows.map((r) => r.status))).sort();
 
   // Today (Manila) for the day-masthead highlight.
   const todayKey = new Date().toLocaleDateString("en-PH", {
@@ -62,8 +70,12 @@ export default async function SchedulePage({
   });
 
   const activeSport = searchParams.sport;
+  const activeStatus = searchParams.status;
   if (activeSport) {
     rows = rows.filter((r) => r.events?.sports?.name === activeSport);
+  }
+  if (activeStatus) {
+    rows = rows.filter((r) => r.status === activeStatus);
   }
 
   // Summary counts over the (now-filtered) rows, so they match `total` below.
@@ -107,22 +119,46 @@ export default async function SchedulePage({
             <span className="text-gold">Schedule</span>
           </>
         }
-        intro="Fourteen days of competition across every venue. Filter by sport to track your discipline."
+        intro="Fourteen days of competition across every venue. Filter by sport or status to track your discipline."
       />
 
       <section className="container py-14 md:py-20">
-        <ScheduleFilter sports={sports} active={activeSport} />
+        <FilterBar
+          basePath="/schedule"
+          current={{ sport: activeSport, status: activeStatus }}
+          groups={[
+            {
+              key: "sport",
+              label: "Sport",
+              allLabel: "All Sports",
+              options: sports.map((s) => ({ value: s, label: s })),
+            },
+            {
+              key: "status",
+              label: "Status",
+              allLabel: "All",
+              options: statuses.map((s) => ({
+                value: s,
+                label: STATUS_LABELS[s] ?? s,
+              })),
+            },
+          ]}
+        />
 
         {total > 0 && (
           <p className="mt-6 font-mono-data text-[11px] uppercase tracking-[0.2em] text-ink/45">
-            {total} events · {dayOrder.size} days · {distinctVenues} venues ·{" "}
-            {distinctSports} sports
+            {total} event{total === 1 ? "" : "s"} · {dayOrder.size} day
+            {dayOrder.size === 1 ? "" : "s"} · {distinctVenues} venue
+            {distinctVenues === 1 ? "" : "s"} · {distinctSports} sport
+            {distinctSports === 1 ? "" : "s"}
           </p>
         )}
 
         {total === 0 ? (
           <div className="mt-10 border border-ink/15 px-6 py-16 text-center font-editorial text-2xl italic text-ink/45">
-            No events scheduled{activeSport ? ` for ${activeSport}` : ""} yet.
+            {activeSport || activeStatus
+              ? "No events match these filters — try clearing one."
+              : "No events scheduled yet."}
           </div>
         ) : (
           <div className="mt-12 space-y-16">

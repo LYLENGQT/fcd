@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
+import { FilterBar } from "@/components/filter-bar";
 
 export const metadata = {
   title: "Results",
@@ -33,7 +34,11 @@ const PODIUM = [
   { medal: "bronze" as const, name: "Bronze", dot: "bg-bronze ring-bronze/50", label: "text-bronze" },
 ];
 
-export default async function ResultsBrowsePage() {
+export default async function ResultsBrowsePage({
+  searchParams,
+}: {
+  searchParams: { sport?: string; division?: string };
+}) {
   const supabase = createClient();
   const [{ data }, { count: totalEvents }] = await Promise.all([
     supabase
@@ -50,9 +55,27 @@ export default async function ResultsBrowsePage() {
   // `events` is fetched whole (no .range()), so eventsWithResults is global, not page-scoped.
   const eventsWithResults = withResults.length;
 
+  // Filter options come from the full with-results set so chips stay stable
+  // regardless of which filter is active.
+  const sportOptions = Array.from(
+    new Set(withResults.map((e) => e.sports?.name).filter(Boolean) as string[]),
+  ).sort();
+  const divisionOptions = Array.from(
+    new Set(withResults.map((e) => e.categories?.name).filter(Boolean) as string[]),
+  ).sort();
+
+  const activeSport = searchParams.sport;
+  const activeDivision = searchParams.division;
+  const hasFilter = Boolean(activeSport || activeDivision);
+  const filtered = withResults.filter(
+    (e) =>
+      (!activeSport || e.sports?.name === activeSport) &&
+      (!activeDivision || e.categories?.name === activeDivision),
+  );
+
   // Group by sport.
   const bySport = new Map<string, EventRow[]>();
-  for (const e of withResults) {
+  for (const e of filtered) {
     const key = e.sports?.name ?? "Other";
     if (!bySport.has(key)) bySport.set(key, []);
     bySport.get(key)!.push(e);
@@ -74,16 +97,45 @@ export default async function ResultsBrowsePage() {
       />
 
       <section className="container pt-10 md:pt-14">
-        <p className="font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
-          <span className="text-gold-deep">{eventsWithResults}</span> of{" "}
-          {totalEvents ?? eventsWithResults} events with results
+        <FilterBar
+          basePath="/results"
+          current={{ sport: activeSport, division: activeDivision }}
+          groups={[
+            {
+              key: "sport",
+              label: "Sport",
+              allLabel: "All Sports",
+              options: sportOptions.map((s) => ({ value: s, label: s })),
+            },
+            {
+              key: "division",
+              label: "Division",
+              allLabel: "All Divisions",
+              options: divisionOptions.map((d) => ({ value: d, label: d })),
+            },
+          ]}
+        />
+        <p className="mt-6 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+          {hasFilter ? (
+            <>
+              <span className="text-gold-deep">{filtered.length}</span> event
+              {filtered.length === 1 ? "" : "s"} shown
+            </>
+          ) : (
+            <>
+              <span className="text-gold-deep">{eventsWithResults}</span> of{" "}
+              {totalEvents ?? eventsWithResults} events with results
+            </>
+          )}
         </p>
       </section>
 
       <section className="container py-14 md:py-20">
         {bySport.size === 0 ? (
           <div className="border border-ink/15 px-6 py-16 text-center font-editorial text-2xl italic text-ink/45">
-            No results published yet — check back once events finish.
+            {hasFilter
+              ? "No results match these filters — try clearing one."
+              : "No results published yet — check back once events finish."}
           </div>
         ) : (
           <div className="space-y-12">

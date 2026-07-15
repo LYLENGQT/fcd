@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
+import { FilterBar } from "@/components/filter-bar";
 import { Trophy } from "lucide-react";
 import type { MeetRecord } from "@/lib/database.types";
 
@@ -11,7 +12,11 @@ export const metadata = {
 
 export const revalidate = 300;
 
-export default async function RecordsPage() {
+export default async function RecordsPage({
+  searchParams,
+}: {
+  searchParams: { sport?: string; division?: string };
+}) {
   const supabase = createClient();
   const { data } = await supabase
     .from("records")
@@ -19,7 +24,24 @@ export default async function RecordsPage() {
     .order("sport")
     .order("sort_order")
     .order("event_name");
-  const records = (data ?? []) as MeetRecord[];
+  const allRecords = (data ?? []) as MeetRecord[];
+
+  // Options from the full set so chips stay stable under any filter.
+  const sportOptions = Array.from(
+    new Set(allRecords.map((r) => r.sport).filter(Boolean)),
+  ).sort();
+  const divisionOptions = Array.from(
+    new Set(allRecords.map((r) => r.level).filter(Boolean) as string[]),
+  ).sort();
+
+  const activeSport = searchParams.sport;
+  const activeDivision = searchParams.division;
+  const hasFilter = Boolean(activeSport || activeDivision);
+  const records = allRecords.filter(
+    (r) =>
+      (!activeSport || r.sport === activeSport) &&
+      (!activeDivision || r.level === activeDivision),
+  );
 
   // Group by sport, preserving the sorted order.
   const bySport = new Map<string, MeetRecord[]>();
@@ -43,13 +65,42 @@ export default async function RecordsPage() {
       />
 
       <section className="container py-14 md:py-20">
-        {records.length === 0 ? (
+        {allRecords.length === 0 ? (
           <div className="border border-ink/15 px-6 py-16 text-center font-editorial text-2xl italic text-ink/45">
             Records will be published here.
           </div>
         ) : (
-          <div className="space-y-14">
-            {groups.map(([sport, rows]) => (
+          <>
+            <FilterBar
+              basePath="/records"
+              current={{ sport: activeSport, division: activeDivision }}
+              groups={[
+                {
+                  key: "sport",
+                  label: "Sport",
+                  allLabel: "All Sports",
+                  options: sportOptions.map((s) => ({ value: s, label: s })),
+                },
+                {
+                  key: "division",
+                  label: "Division",
+                  allLabel: "All Divisions",
+                  options: divisionOptions.map((d) => ({ value: d, label: d })),
+                },
+              ]}
+            />
+            <p className="mb-10 mt-6 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
+              <span className="text-gold-deep">{records.length}</span> record
+              {records.length === 1 ? "" : "s"}
+              {hasFilter ? " shown" : ""}
+            </p>
+            {records.length === 0 ? (
+              <div className="border border-ink/15 px-6 py-16 text-center font-editorial text-2xl italic text-ink/45">
+                No records match these filters — try clearing one.
+              </div>
+            ) : (
+              <div className="space-y-14">
+                {groups.map(([sport, rows]) => (
               <div key={sport}>
                 <header className="flex items-center gap-3 border-b-2 border-ink pb-3">
                   <Trophy className="h-5 w-5 text-gold" />
@@ -102,8 +153,10 @@ export default async function RecordsPage() {
                   </table>
                 </div>
               </div>
-            ))}
-          </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </section>
     </>

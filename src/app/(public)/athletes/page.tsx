@@ -5,6 +5,7 @@ import { MedalCounts } from "@/components/medals";
 import { Pagination } from "@/components/pagination";
 import { PAGE_SIZE_PUBLIC } from "@/lib/constants";
 import { parsePage, pageRange } from "@/lib/utils";
+import { FilterBar } from "@/components/filter-bar";
 import { AthleteSearch } from "./athlete-search";
 
 export const metadata = {
@@ -26,10 +27,20 @@ type Row = {
 export default async function AthletesPage({
   searchParams,
 }: {
-  searchParams: { q?: string; page?: string };
+  searchParams: {
+    q?: string;
+    page?: string;
+    delegation?: string;
+    level?: string;
+    gender?: string;
+  };
 }) {
   const supabase = createClient();
   const q = (searchParams.q ?? "").trim();
+  const activeDelegation = searchParams.delegation;
+  const activeLevel = searchParams.level;
+  const activeGender = searchParams.gender;
+  const anyFilter = Boolean(q || activeDelegation || activeLevel || activeGender);
   const page = parsePage(searchParams.page);
   const { from, to } = pageRange(page, PAGE_SIZE_PUBLIC);
 
@@ -45,6 +56,9 @@ export default async function AthletesPage({
   if (q) {
     query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%`);
   }
+  if (activeDelegation) query = query.eq("delegation_id", activeDelegation);
+  if (activeLevel) query = query.eq("level", activeLevel);
+  if (activeGender) query = query.eq("gender", activeGender);
 
   const { data, count } = await query;
   const athletes = (data ?? []) as unknown as Row[];
@@ -76,20 +90,22 @@ export default async function AthletesPage({
     }
   }
 
-  // Distinct delegations across the UNFILTERED directory — only shown on the
-  // plain "Directory" caption, so skip the read entirely when searching (and
-  // never pair a filtered athlete count with a global delegation count).
-  let delegationCount = 0;
-  if (!q) {
-    const { data: delegationRows } = await supabase
-      .from("athletes")
-      .select("delegation_id");
-    delegationCount = new Set(
-      ((delegationRows ?? []) as { delegation_id: string | null }[])
-        .map((r) => r.delegation_id)
-        .filter((id): id is string => Boolean(id)),
-    ).size;
-  }
+  // Delegations power the filter chips (abbrev + color) and the directory
+  // caption count. One read of a tiny table.
+  const { data: delegationRows } = await supabase
+    .from("delegations")
+    .select("id, abbrev, name, color")
+    .order("abbrev");
+  const delegationOptions = (
+    (delegationRows ?? []) as {
+      id: string;
+      abbrev: string;
+      name: string;
+      color: string;
+    }[]
+  ).map((d) => ({ value: d.id, label: d.abbrev, swatch: d.color }));
+  // Only shown on the plain, unfiltered "Directory" caption.
+  const delegationCount = anyFilter ? 0 : delegationOptions.length;
 
   return (
     <>
@@ -109,7 +125,42 @@ export default async function AthletesPage({
       <section className="container py-14 md:py-20">
         <AthleteSearch initialQuery={q} />
 
-        <div className="mt-4 font-mono-data text-[11px] uppercase tracking-[0.22em] text-ink/50">
+        <div className="mt-6">
+          <FilterBar
+            basePath="/athletes"
+            current={{
+              q: q || undefined,
+              delegation: activeDelegation,
+              level: activeLevel,
+              gender: activeGender,
+            }}
+            groups={[
+              {
+                key: "delegation",
+                label: "Delegation",
+                options: delegationOptions,
+              },
+              {
+                key: "level",
+                label: "Level",
+                options: [
+                  { value: "elementary", label: "Elementary" },
+                  { value: "secondary", label: "Secondary" },
+                ],
+              },
+              {
+                key: "gender",
+                label: "Division",
+                options: [
+                  { value: "boys", label: "Boys" },
+                  { value: "girls", label: "Girls" },
+                ],
+              },
+            ]}
+          />
+        </div>
+
+        <div className="mt-6 font-mono-data text-[11px] uppercase tracking-[0.22em] text-ink/50">
           {q ? `Results for “${q}”` : "Directory"} · {total} athlete
           {total === 1 ? "" : "s"}
           {delegationCount > 0
