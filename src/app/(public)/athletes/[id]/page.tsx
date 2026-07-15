@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import { AthleteAvatar } from "@/components/athlete-avatar";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
@@ -105,15 +105,13 @@ export default async function AthleteDetailPage({
         eyebrow={`${athlete.level ?? ""} ${athlete.gender}`.trim().toUpperCase()}
         title={
           <span className="flex items-center gap-5">
-            {athlete.photo_url && (
-              <Image
-                src={athlete.photo_url}
-                alt={`${athlete.first_name} ${athlete.last_name}`}
-                width={96}
-                height={96}
-                className="h-16 w-16 shrink-0 rounded-sm object-cover ring-2 ring-on-inv/20 md:h-24 md:w-24"
-              />
-            )}
+            <AthleteAvatar
+              firstName={athlete.first_name}
+              lastName={athlete.last_name}
+              photoUrl={athlete.photo_url}
+              color={athlete.delegations?.color}
+              className="h-16 w-16 text-xl ring-2 ring-on-inv/20 md:h-24 md:w-24 md:text-3xl"
+            />
             <span>
               {athlete.first_name}
               <br />

@@ -255,9 +255,9 @@ async function main() {
         last_name: last,
         gender,
         level,
-        // Half get a photo (the delegation seal — a local, non-breaking
-        // stand-in) so both the photo and the no-photo fallback are testable.
-        photo_url: i % 2 === 0 ? (d.logo_url as string) : null,
+        // No stand-in photos: the UI falls back to an initials avatar in the
+        // delegation's color. Real headshots are uploaded via the admin later.
+        photo_url: null,
       });
     }
   });
