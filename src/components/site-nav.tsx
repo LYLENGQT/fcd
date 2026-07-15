@@ -59,7 +59,7 @@ export function SiteNav() {
   return (
     <div className="flex items-center">
       {/* ── Desktop nav ─────────────────────────────────────────────── */}
-      <div ref={desktopRef} className="hidden items-center gap-0.5 md:flex">
+      <div ref={desktopRef} className="hidden items-center gap-0.5 lg:flex">
         {PUBLIC_NAV_GROUPS.map((entry) => {
           if (!isNavGroup(entry)) {
             const active = isActive(entry.href);
@@ -169,10 +169,10 @@ export function SiteNav() {
       </div>
 
       {/* ── Mobile controls ─────────────────────────────────────────── */}
-      <div className="flex items-center gap-1 md:hidden">
+      <div className="flex items-center gap-1 lg:hidden">
         <ThemeToggle />
         <button
-          className="-mr-2 p-2 text-on-inv"
+          className="-mr-2 flex h-11 w-11 items-center justify-center text-on-inv"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label="Toggle menu"
           aria-expanded={mobileOpen}
@@ -183,7 +183,7 @@ export function SiteNav() {
 
       {/* ── Mobile drawer (fixed below the 4rem header) ─────────────── */}
       {mobileOpen && (
-        <div className="fixed inset-x-0 top-16 z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-on-inv/10 bg-surface-inv duration-150 animate-in fade-in-0 slide-in-from-top-2 md:hidden">
+        <div className="fixed inset-x-0 top-16 z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-on-inv/10 bg-surface-inv duration-150 animate-in fade-in-0 slide-in-from-top-2 lg:hidden">
           <div className="container flex flex-col py-3">
             {PUBLIC_NAV_GROUPS.map((entry) => {
               if (!isNavGroup(entry)) {
@@ -193,7 +193,7 @@ export function SiteNav() {
                     key={entry.href}
                     href={entry.href}
                     className={cn(
-                      "border-b border-on-inv/5 py-3 font-mono-data text-xs uppercase tracking-[0.2em]",
+                      "flex min-h-[44px] items-center border-b border-on-inv/5 py-2 font-mono-data text-xs uppercase tracking-[0.2em]",
                       active ? "text-gold" : "text-on-inv/80"
                     )}
                   >
@@ -217,7 +217,7 @@ export function SiteNav() {
                           key={item.href}
                           href={item.href}
                           className={cn(
-                            "flex items-center justify-between py-2.5 pl-3 font-mono-data text-xs uppercase tracking-[0.18em]",
+                            "flex min-h-[44px] items-center justify-between py-2 pl-3 font-mono-data text-xs uppercase tracking-[0.18em]",
                             a ? "text-gold" : "text-on-inv/75"
                           )}
                         >
