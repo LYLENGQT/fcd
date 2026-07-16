@@ -22,7 +22,7 @@ export function SiteHeader() {
             <span className="font-display text-2xl font-black uppercase leading-none tracking-[0.04em] text-on-inv transition-colors group-hover:text-gold">
               FCDSA
             </span>
-            <span className="hidden font-mono-data text-[10px] uppercase tracking-[0.3em] text-on-inv/45 sm:inline">
+            <span className="font-mono-data text-[10px] uppercase tracking-[0.3em] text-on-inv/45">
               Meet&nbsp;&rsquo;26
             </span>
           </span>

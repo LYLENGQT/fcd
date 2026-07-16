@@ -25,7 +25,7 @@ export function RankingNav({ current }: { current: RankingView }) {
           </Link>
         ))}
       </div>
-      <p className="max-w-2xl font-mono-data text-[10px] uppercase leading-relaxed tracking-[0.15em] text-ink/40">
+      <p className="hidden max-w-2xl font-mono-data text-[10px] uppercase leading-relaxed tracking-[0.15em] text-ink/40 md:block">
         Tally ranks by gold→silver→bronze · Standings by points (5/3/1) ·
         Breakdown by sport &amp; division.
       </p>

@@ -186,6 +186,13 @@
   .animate-marquee {
     animation: marquee 38s linear infinite;
   }
+  /* Narrower viewports show less of the strip, so the same duration reads as
+     sluggish — shorten it on phones so the scroll feels consistent. */
+  @media (max-width: 767px) {
+    .animate-marquee {
+      animation-duration: 20s;
+    }
+  }
 
   /* On-air pulse */
   @keyframes onair {
