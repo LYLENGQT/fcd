@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type FilterOption = {
@@ -13,16 +17,16 @@ export type FilterGroup = {
   key: string;
   /** Short caption shown above the chips, e.g. "Sport". */
   label: string;
-  /** Label for the reset chip. Defaults to "All". */
+  /** Label for the reset option/chip. Defaults to "All". */
   allLabel?: string;
   options: FilterOption[];
 };
 
 /**
- * URL-driven filter chips (server component — no client JS). Each chip is a
- * <Link> that toggles one param while preserving the others and resetting
- * pagination, so multiple groups combine cleanly and every filtered view is
- * shareable/SSR-rendered. Editorial chip look (ink/bone, mono caps).
+ * URL-driven filters. Compact <select> dropdowns on mobile (space-saving) and
+ * the editorial chip rows on md+ (unchanged desktop look). Both toggle one param
+ * while preserving the others and resetting pagination, so every filtered view
+ * stays shareable and scroll position is kept.
  */
 export function FilterBar({
   groups,
@@ -33,6 +37,8 @@ export function FilterBar({
   basePath: string;
   current: Record<string, string | undefined>;
 }) {
+  const router = useRouter();
+
   const hrefFor = (key: string, value: string | null) => {
     const params = new URLSearchParams();
     // Preserve every other active param; drop the one we're changing and page.
@@ -77,31 +83,68 @@ export function FilterBar({
   );
 
   return (
-    <div className="space-y-4">
-      {groups.map((group) => {
-        const active = current[group.key];
-        return (
-          <div
-            key={group.key}
-            role="group"
-            aria-label={group.label}
-            className="flex flex-wrap items-center gap-2"
-          >
-            <span className="mr-1 font-mono-data text-[10px] uppercase tracking-[0.25em] text-ink/40">
+    <>
+      {/* Mobile: compact dropdowns (one per group) */}
+      <div className="grid gap-2.5 md:hidden">
+        {groups.map((group) => (
+          <div key={group.key} className="flex items-center gap-3">
+            <span className="w-24 shrink-0 font-mono-data text-[10px] uppercase tracking-[0.15em] text-ink/45">
               {group.label}
             </span>
-            {chip(group.allLabel ?? "All", hrefFor(group.key, null), !active)}
-            {group.options.map((opt) =>
-              chip(
-                opt.label,
-                hrefFor(group.key, opt.value),
-                active === opt.value,
-                opt.swatch,
-              ),
-            )}
+            <div className="relative flex-1">
+              <select
+                aria-label={group.label}
+                value={current[group.key] ?? ""}
+                onChange={(e) =>
+                  router.push(hrefFor(group.key, e.target.value || null), {
+                    scroll: false,
+                  })
+                }
+                className="w-full appearance-none rounded-none border border-ink/25 bg-bone py-2 pl-3 pr-9 font-mono-data text-[11px] uppercase tracking-[0.1em] text-ink focus:border-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-deep"
+              >
+                <option value="">{group.allLabel ?? "All"}</option>
+                {group.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                aria-hidden
+                className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/45"
+              />
+            </div>
           </div>
-        );
-      })}
-    </div>
+        ))}
+      </div>
+
+      {/* Desktop: editorial chip rows */}
+      <div className="hidden space-y-4 md:block">
+        {groups.map((group) => {
+          const active = current[group.key];
+          return (
+            <div
+              key={group.key}
+              role="group"
+              aria-label={group.label}
+              className="flex flex-wrap items-center gap-2"
+            >
+              <span className="mr-1 font-mono-data text-[10px] uppercase tracking-[0.25em] text-ink/40">
+                {group.label}
+              </span>
+              {chip(group.allLabel ?? "All", hrefFor(group.key, null), !active)}
+              {group.options.map((opt) =>
+                chip(
+                  opt.label,
+                  hrefFor(group.key, opt.value),
+                  active === opt.value,
+                  opt.swatch,
+                ),
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
