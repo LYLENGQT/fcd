@@ -75,6 +75,7 @@ export default async function TallyPage({
       <PageHeader
         index="01"
         eyebrow="Standings · Updated Live"
+        views={<RankingNav current="tally" />}
         title={
           <>
             Medal
@@ -115,7 +116,6 @@ export default async function TallyPage({
       />
 
       <section className="container py-14 md:py-20">
-        <RankingNav current="tally" />
         <div className="mb-5 flex items-center gap-3 font-mono-data text-[11px] uppercase tracking-[0.3em] text-ink/55">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full rounded-full bg-crimson pulse-dot" />

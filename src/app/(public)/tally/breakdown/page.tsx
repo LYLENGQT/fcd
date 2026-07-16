@@ -222,6 +222,7 @@ export default async function MedalBreakdownPage() {
       <RealtimeRefresher table="results" />
       <PageHeader
         eyebrow="Rankings · Division · Sport · Delegation"
+        views={<RankingNav current="breakdown" />}
         title={
           <>
             Medal <span className="text-gold">Breakdown</span>
@@ -241,8 +242,6 @@ export default async function MedalBreakdownPage() {
           </div>
         ) : (
           <div className="space-y-10">
-            <RankingNav current="breakdown" />
-
             {/* Meet totals */}
             <div>
               <div className="grid grid-cols-2 gap-px overflow-hidden border border-ink/15 bg-ink/15 sm:grid-cols-3 lg:grid-cols-6">

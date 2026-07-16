@@ -12,6 +12,7 @@ export function PageHeader({
   title,
   intro,
   aside,
+  views,
   back,
   accent,
 }: {
@@ -19,6 +20,8 @@ export function PageHeader({
   title: ReactNode;
   intro?: ReactNode;
   aside?: ReactNode;
+  /** Optional inline switcher/links rendered at the right of the eyebrow row. */
+  views?: ReactNode;
   /** @deprecated Superseded by the rising-sun motif; accepted for back-compat
    *  but no longer rendered. (Same for `watermark`.) */
   index?: string;
@@ -64,12 +67,15 @@ export function PageHeader({
               <BackLink href={back.href}>{back.label}</BackLink>
             </div>
           )}
-          <div className="rise flex items-center gap-3 font-mono-data text-[11px] uppercase tracking-[0.3em] text-on-inv/55">
-            <span
-              className={cn("h-px w-10", !accent && "bg-gold")}
-              style={accent ? { backgroundColor: accent } : undefined}
-            />
-            {eyebrow}
+          <div className="rise flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <div className="flex items-center gap-3 font-mono-data text-[11px] uppercase tracking-[0.3em] text-on-inv/55">
+              <span
+                className={cn("h-px w-10", !accent && "bg-gold")}
+                style={accent ? { backgroundColor: accent } : undefined}
+              />
+              {eyebrow}
+            </div>
+            {views}
           </div>
 
           <h1
