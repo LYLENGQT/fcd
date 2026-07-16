@@ -50,7 +50,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-on-inv/10">
-        <div className="container flex h-12 items-center justify-between font-mono-data text-[10px] uppercase tracking-[0.25em] text-on-inv/45">
+        <div className="container flex flex-col gap-1 py-3 font-mono-data text-[10px] uppercase tracking-[0.25em] text-on-inv/45 sm:h-12 sm:flex-row sm:items-center sm:justify-between sm:gap-0 sm:py-0">
           <span>© {new Date().getFullYear()} FCDSA</span>
           <span>Province of Iloilo · Philippines</span>
         </div>

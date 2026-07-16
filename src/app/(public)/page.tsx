@@ -126,9 +126,9 @@ export default async function HomePage() {
 
         {/* Top ticker bar */}
         <div className="relative z-10 border-b border-on-inv/10">
-          <div className="container flex h-9 items-center justify-between font-mono-data text-[11px] uppercase tracking-[0.2em] text-on-inv/60">
-            <span className="flex items-center gap-2">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold" />
+          <div className="container flex items-start justify-between gap-4 py-2.5 font-mono-data text-[10px] uppercase leading-relaxed tracking-[0.15em] text-on-inv/60 md:h-9 md:items-center md:py-0 md:text-[11px] md:leading-none md:tracking-[0.2em]">
+            <span className="flex items-start gap-2 md:items-center">
+              <span className="mt-[3px] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold md:mt-0" />
               First Congressional District Sports Association Meet · 14&ndash;28 OCT 2026 · PROVINCE OF ILOILO, PHILIPPINES
             </span>
             <span className="hidden md:inline">
