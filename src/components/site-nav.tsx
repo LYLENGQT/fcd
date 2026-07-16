@@ -16,6 +16,7 @@ export function SiteNav() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
   const desktopRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) =>
@@ -27,6 +28,7 @@ export function SiteNav() {
   useEffect(() => {
     setOpenGroup(null);
     setMobileOpen(false);
+    setOpenMobileGroup(null);
   }, [pathname]);
 
   // Desktop dropdown: close on outside-click and Escape.
@@ -51,6 +53,8 @@ export function SiteNav() {
   // Lock body scroll while the mobile drawer is open.
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
+    // Reset the accordion each time the drawer closes so it reopens collapsed.
+    if (!mobileOpen) setOpenMobileGroup(null);
     return () => {
       document.body.style.overflow = "";
     };
@@ -226,32 +230,49 @@ export function SiteNav() {
                     </Link>
                   );
                 }
+                const open = openMobileGroup === entry.label;
+                const active = groupActive(entry.items);
                 return (
-                  <div
-                    key={entry.label}
-                    className="border-b border-on-inv/5 py-3"
-                  >
-                    <p className="font-mono-data text-[10px] uppercase tracking-[0.3em] text-on-inv/40">
+                  <div key={entry.label} className="border-b border-on-inv/5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenMobileGroup(open ? null : entry.label)
+                      }
+                      aria-expanded={open}
+                      className={cn(
+                        "flex min-h-[44px] w-full items-center justify-between py-2 font-mono-data text-xs uppercase tracking-[0.2em] transition-colors",
+                        active || open ? "text-gold" : "text-on-inv/80"
+                      )}
+                    >
                       {entry.label}
-                    </p>
-                    <div className="mt-1 flex flex-col">
-                      {entry.items.map((item) => {
-                        const a = isActive(item.href);
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                              "flex min-h-[44px] items-center justify-between py-2 pl-3 font-mono-data text-xs uppercase tracking-[0.18em]",
-                              a ? "text-gold" : "text-on-inv/75"
-                            )}
-                          >
-                            {item.label}
-                            {a && <span className="h-1.5 w-1.5 rounded-full bg-gold" />}
-                          </Link>
-                        );
-                      })}
-                    </div>
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 shrink-0 transition-transform duration-200",
+                          open && "rotate-180"
+                        )}
+                      />
+                    </button>
+                    {open && (
+                      <div className="flex flex-col pb-2">
+                        {entry.items.map((item) => {
+                          const a = isActive(item.href);
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className={cn(
+                                "flex min-h-[44px] items-center justify-between py-2 pl-3 font-mono-data text-xs uppercase tracking-[0.18em]",
+                                a ? "text-gold" : "text-on-inv/75"
+                              )}
+                            >
+                              {item.label}
+                              {a && <span className="h-1.5 w-1.5 rounded-full bg-gold" />}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 );
               })}
