@@ -116,25 +116,12 @@ export default async function TallyPage({
 
       <section className="container py-14 md:py-20">
         <RankingNav current="tally" />
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3 font-mono-data text-[11px] uppercase tracking-[0.3em] text-ink/55">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-crimson pulse-dot" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-crimson" />
-            </span>
-            Overall Standings · {tally.length} Delegations
-          </div>
-          <div className="flex items-center gap-4">
-            <a
-              href="/present"
-              target="_blank"
-              rel="noopener"
-              className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-ink/55 underline-offset-4 transition-colors hover:text-gold-deep hover:underline"
-            >
-              Present ↗
-            </a>
-            <LiveStamp />
-          </div>
+        <div className="mb-5 flex items-center gap-3 font-mono-data text-[11px] uppercase tracking-[0.3em] text-ink/55">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-crimson pulse-dot" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-crimson" />
+          </span>
+          Overall Standings · {tally.length} Delegations
         </div>
         <TallyTable rows={pageRows} linkDelegations />
         <Pagination
@@ -144,6 +131,18 @@ export default async function TallyPage({
           basePath="/tally"
           searchParams={searchParams}
         />
+        {/* Freshness + present-mode link, below the ranking */}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-ink/10 pt-4">
+          <a
+            href="/present"
+            target="_blank"
+            rel="noopener"
+            className="font-mono-data text-[11px] uppercase tracking-[0.2em] text-ink/55 underline-offset-4 transition-colors hover:text-gold-deep hover:underline"
+          >
+            Present ↗
+          </a>
+          <LiveStamp />
+        </div>
       </section>
 
       {/* ── Medals awarded today ─────────────────────────────────────── */}

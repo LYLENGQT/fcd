@@ -19,8 +19,19 @@ export function SiteNav() {
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
   const desktopRef = useRef<HTMLDivElement>(null);
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  // Active = the single longest nav href matching the path, so a parent like
+  // /tally doesn't also light up when a sibling (/tally/breakdown) is open.
+  const matchesPath = (href: string) =>
+    href === "/"
+      ? pathname === "/"
+      : pathname === href || pathname.startsWith(`${href}/`);
+  const activeHref =
+    PUBLIC_NAV_GROUPS.flatMap((e) =>
+      isNavGroup(e) ? e.items.map((i) => i.href) : [e.href],
+    )
+      .filter(matchesPath)
+      .sort((a, b) => b.length - a.length)[0] ?? null;
+  const isActive = (href: string) => href === activeHref;
   const groupActive = (items: readonly NavLinkT[]) =>
     items.some((i) => isActive(i.href));
 

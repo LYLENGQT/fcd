@@ -68,15 +68,12 @@ export default async function StandingsPage() {
         ) : (
           <>
             <RankingNav current="standings" />
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3 font-mono-data text-[11px] uppercase tracking-[0.3em] text-ink/55">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-crimson pulse-dot" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-crimson" />
-                </span>
-                Championship Points · {rows.length} Delegations
-              </div>
-              <LiveStamp />
+            <div className="mb-5 flex items-center gap-3 font-mono-data text-[11px] uppercase tracking-[0.3em] text-ink/55">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-crimson pulse-dot" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-crimson" />
+              </span>
+              Championship Points · {rows.length} Delegations
             </div>
             <p className="mb-3 font-mono-data text-[10px] uppercase tracking-[0.2em] text-ink/45">
               Points = Gold ×5 · Silver ×3 · Bronze ×1
@@ -164,6 +161,9 @@ export default async function StandingsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
+            <div className="mt-5 flex justify-end border-t border-ink/10 pt-4">
+              <LiveStamp />
             </div>
           </>
         )}
