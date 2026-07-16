@@ -181,63 +181,89 @@ export function SiteNav() {
         </button>
       </div>
 
-      {/* ── Mobile drawer (fixed below the 4rem header) ─────────────── */}
+      {/* ── Mobile drawer: right-side slide-in panel + dimmed backdrop ── */}
       {mobileOpen && (
-        <div className="fixed inset-x-0 top-16 z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-on-inv/10 bg-surface-inv duration-150 animate-in fade-in-0 slide-in-from-top-2 lg:hidden">
-          <div className="container flex flex-col py-3">
-            {PUBLIC_NAV_GROUPS.map((entry) => {
-              if (!isNavGroup(entry)) {
-                const active = isActive(entry.href);
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-ink/60 backdrop-blur-sm duration-150 animate-in fade-in-0 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site menu"
+            className="fixed inset-y-0 right-0 z-50 flex w-[min(80vw,20rem)] flex-col overflow-y-auto border-l border-on-inv/10 bg-surface-inv text-on-inv shadow-2xl shadow-black/40 duration-200 animate-in slide-in-from-right lg:hidden"
+          >
+            <div className="flex items-center justify-between border-b border-on-inv/10 px-5 py-4">
+              <span className="font-mono-data text-[11px] uppercase tracking-[0.3em] text-on-inv/55">
+                Menu
+              </span>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+                className="-mr-2 flex h-11 w-11 items-center justify-center text-on-inv/70 transition-colors hover:text-on-inv"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex flex-col px-5 pb-8 pt-1">
+              {PUBLIC_NAV_GROUPS.map((entry) => {
+                if (!isNavGroup(entry)) {
+                  const active = isActive(entry.href);
+                  return (
+                    <Link
+                      key={entry.href}
+                      href={entry.href}
+                      className={cn(
+                        "flex min-h-[44px] items-center border-b border-on-inv/5 py-2 font-mono-data text-xs uppercase tracking-[0.2em]",
+                        active ? "text-gold" : "text-on-inv/80"
+                      )}
+                    >
+                      {entry.label}
+                    </Link>
+                  );
+                }
                 return (
-                  <Link
-                    key={entry.href}
-                    href={entry.href}
-                    className={cn(
-                      "flex min-h-[44px] items-center border-b border-on-inv/5 py-2 font-mono-data text-xs uppercase tracking-[0.2em]",
-                      active ? "text-gold" : "text-on-inv/80"
-                    )}
+                  <div
+                    key={entry.label}
+                    className="border-b border-on-inv/5 py-3"
                   >
-                    {entry.label}
-                  </Link>
-                );
-              }
-              return (
-                <div
-                  key={entry.label}
-                  className="border-b border-on-inv/5 py-3"
-                >
-                  <p className="font-mono-data text-[10px] uppercase tracking-[0.3em] text-on-inv/40">
-                    {entry.label}
-                  </p>
-                  <div className="mt-1 flex flex-col">
-                    {entry.items.map((item) => {
-                      const a = isActive(item.href);
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={cn(
-                            "flex min-h-[44px] items-center justify-between py-2 pl-3 font-mono-data text-xs uppercase tracking-[0.18em]",
-                            a ? "text-gold" : "text-on-inv/75"
-                          )}
-                        >
-                          {item.label}
-                          {a && <span className="h-1.5 w-1.5 rounded-full bg-gold" />}
-                        </Link>
-                      );
-                    })}
+                    <p className="font-mono-data text-[10px] uppercase tracking-[0.3em] text-on-inv/40">
+                      {entry.label}
+                    </p>
+                    <div className="mt-1 flex flex-col">
+                      {entry.items.map((item) => {
+                        const a = isActive(item.href);
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                              "flex min-h-[44px] items-center justify-between py-2 pl-3 font-mono-data text-xs uppercase tracking-[0.18em]",
+                              a ? "text-gold" : "text-on-inv/75"
+                            )}
+                          >
+                            {item.label}
+                            {a && <span className="h-1.5 w-1.5 rounded-full bg-gold" />}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            <Link
-              href="/admin"
-              className="mt-3 inline-flex w-fit items-center gap-2 border border-gold/50 px-3 py-2 font-mono-data text-xs uppercase tracking-[0.2em] text-gold"
-            >
-              Admin Desk
-            </Link>
+                );
+              })}
+              <Link
+                href="/admin"
+                className="mt-4 inline-flex w-fit items-center gap-2 border border-gold/50 px-3 py-2 font-mono-data text-xs uppercase tracking-[0.2em] text-gold"
+              >
+                Admin Desk
+              </Link>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
